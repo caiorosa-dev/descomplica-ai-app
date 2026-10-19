@@ -4,6 +4,7 @@ import multipart from '@fastify/multipart';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import type { Env } from './env';
+import { analysisRoutes } from './modules/analysis/routes';
 import { documentsRoutes } from './modules/documents/routes';
 import { healthRoutes } from './modules/health/routes';
 import { presetsRoutes } from './modules/presets/routes';
@@ -74,5 +75,6 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
   await app.register(runsRoutes);
   await app.register(runResultRoutes);
   await app.register(runExportRoute);
+  await app.register(analysisRoutes);
   return app;
 }
