@@ -1,5 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { PresetsPage } from '@/features/presets/presets-page';
 
-export const Route = createFileRoute('/presets')({
-  component: () => <h1 className="font-heading text-2xl font-semibold">Presets</h1>,
-});
+export const Route = createFileRoute('/presets')({ component: PresetsPage });
