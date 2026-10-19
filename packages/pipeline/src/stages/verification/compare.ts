@@ -12,9 +12,9 @@ export function retypeClaimValue(claim: Claim): Claim {
   if (!claim.value) return claim;
   switch (claim.category) {
     case 'date': {
-      const found = findDates(claim.text);
-      return found.length === 1
-        ? { ...claim, value: { ...(claim.value as ValueOf<'date'>), iso: found[0]!.iso } }
+      const [only, ...rest] = findDates(claim.text);
+      return only && rest.length === 0
+        ? { ...claim, value: { ...(claim.value as ValueOf<'date'>), iso: only.iso } }
         : claim;
     }
     case 'monetary_value': {
