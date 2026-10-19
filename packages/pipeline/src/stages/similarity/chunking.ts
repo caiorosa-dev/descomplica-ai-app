@@ -34,16 +34,14 @@ export function chunkSummary(summary: Summary): SummaryChunk[] {
       paragraphIndex: null,
     },
   ];
-  summary.sections.forEach((section, sectionIndex) =>
-    section.paragraphs.forEach((p, paragraphIndex) =>
+  for (const [sectionIndex, section] of summary.sections.entries())
+    for (const [paragraphIndex, p] of section.paragraphs.entries())
       chunks.push({
         id: `P${String(chunks.length).padStart(2, '0')}`,
         text: p.text,
         tokens: countTokens(p.text),
         sectionIndex,
         paragraphIndex,
-      }),
-    ),
-  );
+      });
   return chunks;
 }
