@@ -56,7 +56,7 @@ function fuzzyFind(segment: string, index: GroundingIndex, from: number, thresho
 export function groundQuote(quote: string, index: GroundingIndex, fuzzyThreshold: number): GroundingMatch {
   const segments = quote
     .split(ELLIPSIS)
-    .filter((s, i) => i % 2 === 0)
+    .filter((_, i) => i % 2 === 0)
     .map(normalizeQuote)
     .filter((s) => s.length > 0);
   if (segments.length === 0) return NOT_FOUND;
