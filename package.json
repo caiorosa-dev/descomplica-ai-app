@@ -1,0 +1,24 @@
+{
+  "name": "descomplica-ai-app",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.14.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "@types/node": "^24.19.2",
+    "turbo": "^2.11.9",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}
