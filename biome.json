@@ -7,7 +7,15 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!**/dist", "!**/.turbo", "!**/coverage", "!**/routeTree.gen.ts", "!**/src/generated"]
+    "includes": [
+      "**",
+      "!**/dist",
+      "!**/.turbo",
+      "!**/coverage",
+      "!**/routeTree.gen.ts",
+      "!**/src/generated",
+      "!**/components/ui"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -47,5 +55,10 @@
         }
       }
     }
-  ]
+  ],
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  }
 }
