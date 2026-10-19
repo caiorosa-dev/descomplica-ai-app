@@ -15,3 +15,4 @@ export * from './stages/summarization/stage';
 export * from './stages/text-extraction/detect-format';
 export * from './stages/text-extraction/stage';
 export type { Line, LineDocument, Page } from './stages/text-extraction/types';
+export * from './stages/verification/stage';
