@@ -6,6 +6,7 @@ import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod
 import type { Env } from './env';
 import { documentsRoutes } from './modules/documents/routes';
 import { healthRoutes } from './modules/health/routes';
+import { presetsRoutes } from './modules/presets/routes';
 import { providersRoutes } from './modules/providers/routes';
 import { registerErrorHandler } from './plugins/error-handler';
 import { registerPrisma } from './plugins/prisma';
@@ -48,5 +49,6 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
   await app.register(healthRoutes);
   await app.register(providersRoutes);
   await app.register(documentsRoutes);
+  await app.register(presetsRoutes);
   return app;
 }
