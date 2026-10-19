@@ -1,3 +1,4 @@
+export { headingsFor, SECTION_HEADINGS, summaryPlainText, TARGET_WORDS } from './agents/summarizer/headings';
 export * from './core/agent';
 export * from './core/call-settings';
 export * from './core/concurrency';
@@ -6,6 +7,8 @@ export * from './core/errors';
 export * from './core/stage';
 export * from './core/tokens';
 export * from './stages/information-extraction/stage';
+export * from './stages/summarization/readability';
+export * from './stages/summarization/stage';
 export * from './stages/text-extraction/detect-format';
 export * from './stages/text-extraction/stage';
 export type { Line, LineDocument, Page } from './stages/text-extraction/types';
