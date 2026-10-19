@@ -14,6 +14,7 @@ const { values } = parseArgs({
   options: {
     'from-label': { type: 'string', default: 'eval-corpus' },
     preset: { type: 'string' },
+    fault: { type: 'string', multiple: true },
     api: { type: 'string', default: 'http://localhost:3333' },
     concurrency: { type: 'string', default: '2' },
     yes: { type: 'boolean', default: false },
@@ -53,6 +54,9 @@ if (values.preset && !presetId) throw new Error(`Preset não encontrado: ${value
 const sources = (await client.listRuns({ label: values['from-label'] })).filter(
   (r) => r.status === 'completed' && (!presetId || r.presetId === presetId),
 );
+const unknownFault = (values.fault ?? []).filter((f) => !FAULT_TYPES.includes(f as FaultType));
+if (unknownFault.length) throw new Error(`Falha desconhecida: ${unknownFault.join(', ')}`);
+const faultTypes = values.fault?.length ? FAULT_TYPES.filter((t) => values.fault?.includes(t)) : FAULT_TYPES;
 const results = new Map<string, RunResultDto>();
 for (const run of sources) results.set(run.id, await client.getResult(run.id));
 
@@ -60,7 +64,7 @@ const jobs = sources.flatMap((run) => {
   const result = results.get(run.id);
   const summary = result?.summary?.summary;
   if (!result || !summary) return [];
-  return FAULT_TYPES.map((type) => ({ run, result, type, mutation: applyFault(type, summary, result.facts) }));
+  return faultTypes.map((type) => ({ run, result, type, mutation: applyFault(type, summary, result.facts) }));
 });
 const applicable = jobs.filter((j) => j.mutation !== null);
 console.log(
@@ -128,7 +132,7 @@ await Promise.all(
   }),
 );
 
-const byType = FAULT_TYPES.map((type) => {
+const byType = faultTypes.map((type) => {
   const applied = rows.filter((r) => r.fault === type && r.applied && r.status === 'completed');
   const detected = applied.filter((r) => r.detected).length;
   return {

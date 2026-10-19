@@ -104,7 +104,7 @@ Processa os 20 documentos do corpus com um ou mais presets (`--preset` pode repe
 pnpm eval:faults --from-label eval-corpus
 ```
 
-Injeta falhas determinísticas nos resumos já gerados (data trocada, valor trocado, prazo trocado, resultado invertido, omissão e frase inventada), reprocessa a partir da similaridade e mede quantas a verificação detecta ([ADR 0014](docs/adr/0014-evaluation-corpus-cross-matrix-fault-injection.md)).
+Injeta falhas determinísticas nos resumos já gerados (data trocada, valor trocado, prazo trocado, resultado invertido, omissão e frase inventada), reprocessa a partir da similaridade e mede quantas a verificação detecta. Use `--fault <tipo>` para rodar só alguns tipos ([ADR 0014](docs/adr/0014-evaluation-corpus-cross-matrix-fault-injection.md)).
 
 Os relatórios ficam em `reports/<data>/` e `reports/<data>-faults/`, com `summary.md`, `results.csv` e `results.json`. O corpus está descrito em [`corpus/README.md`](corpus/README.md).
 
