@@ -37,29 +37,29 @@ export function UploadDropzone() {
   };
 
   return (
-    <div
-      role="button"
-      tabIndex={0}
-      aria-label="Enviar documento"
-      onClick={() => input.current?.click()}
-      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && input.current?.click()}
-      onDragOver={(e) => {
-        e.preventDefault();
-        setDragging(true);
-      }}
-      onDragLeave={() => setDragging(false)}
-      onDrop={onDrop}
-      className={cn(
-        'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-8 text-center outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring',
-        dragging ? 'border-primary bg-muted' : 'hover:bg-muted/50',
-      )}
-    >
-      <UploadIcon className="text-muted-foreground" />
-      <p className="font-medium">Arraste um documento ou clique para escolher</p>
-      <p className="text-sm text-muted-foreground">PDF, DOCX, HTML ou TXT, até 20 MB</p>
-      {progress !== null && (
-        <Progress value={progress * 100} className="mt-2 w-full max-w-xs" aria-label="Progresso do envio" />
-      )}
+    <>
+      <button
+        type="button"
+        aria-label="Enviar documento"
+        onClick={() => input.current?.click()}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={onDrop}
+        className={cn(
+          'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed p-8 text-center outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring',
+          dragging ? 'border-primary bg-muted' : 'hover:bg-muted/50',
+        )}
+      >
+        <UploadIcon className="text-muted-foreground" />
+        <span className="font-medium">Arraste um documento ou clique para escolher</span>
+        <span className="text-sm text-muted-foreground">PDF, DOCX, HTML ou TXT, até 20 MB</span>
+        {progress !== null && (
+          <Progress value={progress * 100} className="mt-2 w-full max-w-xs" aria-label="Progresso do envio" />
+        )}
+      </button>
       <input
         ref={input}
         type="file"
@@ -70,6 +70,6 @@ export function UploadDropzone() {
           if (file) void send(file);
         }}
       />
-    </div>
+    </>
   );
 }
