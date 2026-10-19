@@ -9,6 +9,7 @@ import { healthRoutes } from './modules/health/routes';
 import { presetsRoutes } from './modules/presets/routes';
 import { providersRoutes } from './modules/providers/routes';
 import { runEventsRoute } from './modules/runs/events-route';
+import { runResultRoutes } from './modules/runs/result-routes';
 import { runsRoutes } from './modules/runs/routes';
 import { registerErrorHandler } from './plugins/error-handler';
 import { registerPrisma } from './plugins/prisma';
@@ -70,5 +71,6 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
   await app.register(presetsRoutes);
   await app.register(runEventsRoute);
   await app.register(runsRoutes);
+  await app.register(runResultRoutes);
   return app;
 }
