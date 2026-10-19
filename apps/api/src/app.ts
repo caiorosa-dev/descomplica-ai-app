@@ -8,9 +8,11 @@ import { documentsRoutes } from './modules/documents/routes';
 import { healthRoutes } from './modules/health/routes';
 import { presetsRoutes } from './modules/presets/routes';
 import { providersRoutes } from './modules/providers/routes';
+import { runEventsRoute } from './modules/runs/events-route';
 import { registerErrorHandler } from './plugins/error-handler';
 import { registerPrisma } from './plugins/prisma';
 import type { EmbedManyFn } from './runtime/adapters/embedder';
+import { createEventBus, type EventBus } from './runtime/event-bus';
 import { createFileStorage, type FileStorage } from './storage/file-storage';
 
 export const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
@@ -33,6 +35,7 @@ declare module 'fastify' {
     env: Env;
     aiOverrides: AiOverrides;
     storage: FileStorage;
+    eventBus: EventBus;
   }
 }
 
@@ -43,6 +46,7 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
   app.decorate('env', opts.env);
   app.decorate('aiOverrides', opts.ai ?? {});
   app.decorate('storage', createFileStorage(opts.env.UPLOAD_DIR));
+  app.decorate('eventBus', createEventBus());
   registerErrorHandler(app);
   registerPrisma(app, { url: opts.env.DATABASE_URL, prisma: opts.prisma });
   await app.register(multipart, { limits: { fileSize: MAX_UPLOAD_BYTES, files: 1 } });
@@ -50,5 +54,6 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
   await app.register(providersRoutes);
   await app.register(documentsRoutes);
   await app.register(presetsRoutes);
+  await app.register(runEventsRoute);
   return app;
 }
