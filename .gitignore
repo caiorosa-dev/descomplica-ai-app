@@ -6,3 +6,5 @@ reports/
 coverage
 *.tsbuildinfo
 .DS_Store
+.data
+packages/db/src/generated

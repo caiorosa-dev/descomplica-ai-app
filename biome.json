@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!**/dist", "!**/.turbo", "!**/coverage", "!**/routeTree.gen.ts", "!**/prisma/generated"]
+    "includes": ["**", "!**/dist", "!**/.turbo", "!**/coverage", "!**/routeTree.gen.ts", "!**/src/generated"]
   },
   "formatter": {
     "enabled": true,
