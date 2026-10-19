@@ -34,3 +34,11 @@ export function useCreateRun() {
     },
   });
 }
+
+export function useDeleteDocument() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => api.del(`/documents/${id}`),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['documents'] }),
+  });
+}

@@ -67,6 +67,13 @@ export function createDocumentsRepository(prisma: PrismaClient) {
       const rows = await prisma.document.findMany({ orderBy: { createdAt: 'desc' }, include: documentInclude });
       return rows.map(toDocumentDto);
     },
+    async activeRunCount(id: string) {
+      return prisma.run.count({ where: { documentId: id, status: { in: ['queued', 'running'] } } });
+    },
+    /** Runs, stages and results go with it (cascade). */
+    async delete(id: string) {
+      await prisma.document.delete({ where: { id } });
+    },
     async create(data: { filename: string; mimeType: string; sizeBytes: number; sha256: string; storagePath: string }) {
       const row = await prisma.document.create({ data: { ...data, source: 'upload' }, include: documentInclude });
       return toDocumentDto(row);

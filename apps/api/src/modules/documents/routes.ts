@@ -42,6 +42,18 @@ export async function documentsRoutes(app: FastifyInstance): Promise<void> {
     return document;
   });
 
+  r.delete('/documents/:id', { schema: { params: IdParams } }, async (request, reply) => {
+    const row = await repo.getRow(request.params.id);
+    if (!row) throw notFound('Documento');
+    if (row.source === 'corpus')
+      throw new HttpError(409, 'DOCUMENT_IS_CORPUS', 'Documentos do corpus não podem ser excluídos.');
+    if ((await repo.activeRunCount(row.id)) > 0)
+      throw new HttpError(409, 'DOCUMENT_HAS_ACTIVE_RUN', 'Espere a execução terminar ou cancele antes de excluir.');
+    await repo.delete(row.id);
+    await app.storage.remove(row.storagePath);
+    return reply.status(204).send();
+  });
+
   r.get('/documents/:id/file', { schema: { params: IdParams } }, async (request, reply) => {
     const row = await repo.getRow(request.params.id);
     if (!row) throw notFound('Documento');

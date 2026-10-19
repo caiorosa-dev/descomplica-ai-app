@@ -1,13 +1,35 @@
 import type { DocumentDto, DocumentType } from '@app/shared';
 import { Link } from '@tanstack/react-router';
-import { ChevronRightIcon, FileTextIcon, LandmarkIcon, type LucideIcon, RotateCcwIcon, ScaleIcon } from 'lucide-react';
-import { motion } from 'motion/react';
+import {
+  ChevronRightIcon,
+  FileTextIcon,
+  LandmarkIcon,
+  type LucideIcon,
+  RotateCcwIcon,
+  ScaleIcon,
+  Trash2Icon,
+} from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { toast } from 'sonner';
 import { EASE_OUT } from '@/components/motion';
 import { DocumentTypeBadge, RunStatusBadge, ToneBadge } from '@/components/tone-badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { ApiError } from '@/lib/api-client';
 import { formatWhen } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { useDeleteDocument } from './queries';
 
 const TYPE_ICON: Record<DocumentType | 'unknown', { icon: LucideIcon; className: string }> = {
   court_decision: { icon: ScaleIcon, className: 'bg-info-soft text-info' },
@@ -15,6 +37,53 @@ const TYPE_ICON: Record<DocumentType | 'unknown', { icon: LucideIcon; className:
   generic: { icon: FileTextIcon, className: 'bg-neutral-soft text-neutral-tone' },
   unknown: { icon: FileTextIcon, className: 'bg-neutral-soft text-neutral-tone' },
 };
+
+function DeleteButton({ doc }: { doc: DocumentDto }) {
+  const remove = useDeleteDocument();
+  const busy = doc.lastRunStatus === 'queued' || doc.lastRunStatus === 'running';
+  return (
+    <AlertDialog>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Excluir arquivo"
+              disabled={busy || remove.isPending}
+              className="text-muted-foreground hover:bg-destructive-soft hover:text-destructive"
+            >
+              <Trash2Icon />
+            </Button>
+          </AlertDialogTrigger>
+        </TooltipTrigger>
+        <TooltipContent>{busy ? 'Espere terminar para excluir' : 'Excluir'}</TooltipContent>
+      </Tooltip>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Excluir este arquivo?</AlertDialogTitle>
+          <AlertDialogDescription>
+            {doc.filename} e os resultados dele saem do app. Não dá para desfazer.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogAction
+            variant="destructive"
+            onClick={() =>
+              remove.mutate(doc.id, {
+                onSuccess: () => toast.success('Arquivo excluído'),
+                onError: (e) => toast.error(e instanceof ApiError ? e.message : 'Não foi possível excluir.'),
+              })
+            }
+          >
+            Excluir
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
 
 function DocumentRow({
   doc,
@@ -50,8 +119,9 @@ function DocumentRow({
       layout
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: -16, transition: { duration: 0.2 } }}
       transition={{ duration: 0.3, ease: EASE_OUT, delay: Math.min(index, 12) * 0.03 }}
-      className="group flex items-center gap-2 rounded-2xl pr-2 transition-colors hover:bg-card"
+      className="group flex items-center gap-1 rounded-2xl pr-2 transition-colors hover:bg-card"
     >
       {doc.lastRunId ? (
         <Link
@@ -82,6 +152,7 @@ function DocumentRow({
           Simplificar
         </Button>
       )}
+      {doc.source === 'upload' && <DeleteButton doc={doc} />}
     </motion.li>
   );
 }
@@ -95,9 +166,11 @@ export function DocumentList({
 }) {
   return (
     <ul className="-mx-3 flex flex-col">
-      {documents.map((doc, i) => (
-        <DocumentRow key={doc.id} doc={doc} index={i} onProcess={onProcess} />
-      ))}
+      <AnimatePresence initial={false}>
+        {documents.map((doc, i) => (
+          <DocumentRow key={doc.id} doc={doc} index={i} onProcess={onProcess} />
+        ))}
+      </AnimatePresence>
     </ul>
   );
 }

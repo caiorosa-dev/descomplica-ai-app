@@ -81,6 +81,12 @@ function apiCallErrorOf(error: unknown): APICallError | null {
   return null;
 }
 
+/** Out of credits also comes back as 429, but waiting does not help (OpenAI: `insufficient_quota`). */
+export function isQuotaExceeded(error: APICallError): boolean {
+  const text = `${error.message} ${error.responseBody ?? ''}`;
+  return /insufficient_quota|no credits|credit balance is too low|exceeded your current quota/i.test(text);
+}
+
 function toPipelineError(error: unknown, signal: AbortSignal): PipelineError {
   if (isPipelineError(error)) return error;
   if (
@@ -90,6 +96,8 @@ function toPipelineError(error: unknown, signal: AbortSignal): PipelineError {
   )
     return new PipelineError('CANCELLED', 'LLM call aborted');
   const apiError = apiCallErrorOf(error);
+  if (apiError && isQuotaExceeded(apiError))
+    return new PipelineError('PROVIDER_QUOTA_EXCEEDED', apiError.message, errorInfo(apiError));
   if (apiError?.statusCode === 429) return new PipelineError('RATE_LIMITED', apiError.message, errorInfo(apiError));
   if (apiError || RetryError.isInstance(error))
     return new PipelineError('PROVIDER_ERROR', (apiError ?? (error as Error)).message, errorInfo(apiError ?? error));

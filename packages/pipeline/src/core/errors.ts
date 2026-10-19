@@ -5,6 +5,7 @@ export type PipelineErrorCode =
   | 'PROVIDER_NOT_CONFIGURED'
   | 'PROVIDER_ERROR'
   | 'RATE_LIMITED'
+  | 'PROVIDER_QUOTA_EXCEEDED'
   | 'SCHEMA_VALIDATION_FAILED'
   | 'CANCELLED'
   | 'INTERRUPTED'
@@ -18,6 +19,8 @@ export const USER_MESSAGES: Record<PipelineErrorCode, string> = {
   PROVIDER_NOT_CONFIGURED: 'A configuração usa um provedor sem chave de API. Configure o .env ou troque o preset.',
   PROVIDER_ERROR: 'O provedor de IA falhou mesmo após novas tentativas. Tente de novo a partir desta etapa.',
   RATE_LIMITED: 'O provedor de IA continuou limitando as requisições. Tente de novo ou reduza a concorrência.',
+  PROVIDER_QUOTA_EXCEEDED:
+    'A conta do provedor de IA está sem créditos. Adicione créditos e refaça a partir desta etapa.',
   SCHEMA_VALIDATION_FAILED: 'O modelo respondeu fora do formato esperado. Tente de novo ou troque o modelo.',
   CANCELLED: 'A execução foi cancelada.',
   INTERRUPTED: 'A API reiniciou durante a execução. Retome a execução para continuar.',

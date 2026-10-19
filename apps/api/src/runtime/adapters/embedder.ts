@@ -1,9 +1,9 @@
 import { createHash } from 'node:crypto';
 import { createOpenAI } from '@ai-sdk/openai';
 import type { PrismaClient } from '@app/db';
-import { type Embedder, type EmbeddingCallRecord, PipelineError } from '@app/pipeline';
+import { type Embedder, type EmbeddingCallRecord, isQuotaExceeded, PipelineError } from '@app/pipeline';
 import { estimateCostUsd } from '@app/shared';
-import { embedMany } from 'ai';
+import { APICallError, embedMany, RetryError } from 'ai';
 import type { Env } from '../../env';
 
 export type EmbedManyFn = (args: {
@@ -20,13 +20,24 @@ export function defaultEmbedMany(env: Env): EmbedManyFn {
     if (!env.OPENAI_API_KEY)
       throw new PipelineError('PROVIDER_NOT_CONFIGURED', 'Embeddings need OPENAI_API_KEY', { provider: 'openai' });
     const openai = createOpenAI({ apiKey: env.OPENAI_API_KEY });
-    const result = await embedMany({
-      model: openai.embeddingModel(model.slice(model.indexOf(':') + 1)),
-      values,
-      maxRetries: 2,
-      ...(dimensions ? { dimensions } : {}),
-    });
-    return { embeddings: result.embeddings, tokens: result.usage.tokens };
+    try {
+      const result = await embedMany({
+        model: openai.embeddingModel(model.slice(model.indexOf(':') + 1)),
+        values,
+        maxRetries: 2,
+        ...(dimensions ? { dimensions } : {}),
+      });
+      return { embeddings: result.embeddings, tokens: result.usage.tokens };
+    } catch (error) {
+      const apiError = APICallError.isInstance(error)
+        ? error
+        : RetryError.isInstance(error) && APICallError.isInstance(error.lastError)
+          ? error.lastError
+          : null;
+      if (apiError && isQuotaExceeded(apiError))
+        throw new PipelineError('PROVIDER_QUOTA_EXCEEDED', apiError.message, { statusCode: apiError.statusCode });
+      throw error;
+    }
   };
 }
 
