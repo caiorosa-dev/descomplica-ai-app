@@ -18,15 +18,15 @@ export function retypeClaimValue(claim: Claim): Claim {
         : claim;
     }
     case 'monetary_value': {
-      const found = findMoney(claim.text);
-      return found.length === 1
-        ? { ...claim, value: { ...(claim.value as ValueOf<'monetary_value'>), amount: found[0]!.amount } }
+      const [only, ...rest] = findMoney(claim.text);
+      return only && rest.length === 0
+        ? { ...claim, value: { ...(claim.value as ValueOf<'monetary_value'>), amount: only.amount } }
         : claim;
     }
     case 'deadline': {
-      const found = findDurations(claim.text);
-      if (found.length !== 1) return claim;
-      const { amount, unit, businessDays } = found[0]!;
+      const [only, ...rest] = findDurations(claim.text);
+      if (!only || rest.length > 0) return claim;
+      const { amount, unit, businessDays } = only;
       return { ...claim, value: { ...(claim.value as ValueOf<'deadline'>), amount, unit, businessDays } };
     }
     default:
