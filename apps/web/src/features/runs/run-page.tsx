@@ -1,5 +1,6 @@
 import { TERMINAL_RUN_STATUSES } from '@app/shared';
-import { RotateCcwIcon } from 'lucide-react';
+import { Link } from '@tanstack/react-router';
+import { GitCompareArrowsIcon, RotateCcwIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -43,6 +44,14 @@ export function RunPage({ runId }: { runId: string }) {
           <>
             <CancelButton runId={runId} status={status} />
             <ExportMenu run={run.data} />
+            {status === 'completed' && (
+              <Button asChild variant="outline">
+                <Link to="/compare" search={{ from: runId }}>
+                  <GitCompareArrowsIcon data-icon="inline-start" />
+                  Comparar
+                </Link>
+              </Button>
+            )}
             {finished && (
               <Button variant="outline" onClick={() => setRerunOpen(true)} disabled={!providers.data}>
                 <RotateCcwIcon data-icon="inline-start" />

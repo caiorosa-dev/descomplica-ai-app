@@ -1,5 +1,13 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { ComparePage } from '@/features/compare/compare-page';
 
 export const Route = createFileRoute('/compare')({
-  component: () => <h1 className="font-heading text-2xl font-semibold">Comparar execuções</h1>,
+  validateSearch: (search: Record<string, unknown>): { runs?: string; from?: string } => ({
+    runs: typeof search.runs === 'string' ? search.runs : undefined,
+    from: typeof search.from === 'string' ? search.from : undefined,
+  }),
+  component: function CompareRoute() {
+    const { runs, from } = Route.useSearch();
+    return <ComparePage runs={runs} from={from} />;
+  },
 });
