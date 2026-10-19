@@ -164,11 +164,11 @@ function Comparison({ ids }: { ids: [string, string] }) {
 export function ComparePage({ runs, from }: { runs?: string; from?: string }) {
   const ids = parseRunsParam(runs);
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8 pt-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-heading text-2xl font-semibold">Comparar execuções</h1>
-          <p className="text-muted-foreground">Configuração, métricas, resumos e alertas lado a lado.</p>
+        <div className="flex flex-col gap-1">
+          <h1 className="text-3xl font-semibold">Comparar</h1>
+          <p className="text-muted-foreground">Dois resultados do mesmo documento, lado a lado.</p>
         </div>
         {ids && (
           <Button asChild variant="outline">

@@ -1,26 +1,19 @@
 import { STAGE_ORDER, type StageName, type StageRunStatus } from '@app/shared';
-import {
-  CheckCircle2Icon,
-  CircleIcon,
-  Loader2Icon,
-  type LucideIcon,
-  PencilLineIcon,
-  RecycleIcon,
-  XCircleIcon,
-} from 'lucide-react';
+import { CheckIcon, PencilLineIcon, RecycleIcon, XIcon } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { Spinner } from '@/components/ui/spinner';
 import { formatDuration, formatNumber, formatUsd } from '@/lib/format';
 import { STAGE_LABELS, STAGE_RUN_STATUS_LABELS } from '@/lib/labels';
 import { cn } from '@/lib/utils';
 import type { LiveStage } from './events-reducer';
 
-const ICONS: Record<StageRunStatus, { icon: LucideIcon; className: string }> = {
-  pending: { icon: CircleIcon, className: 'text-muted-foreground' },
-  running: { icon: Loader2Icon, className: 'animate-spin text-info' },
-  completed: { icon: CheckCircle2Icon, className: 'text-success' },
-  reused: { icon: RecycleIcon, className: 'text-muted-foreground' },
-  overridden: { icon: PencilLineIcon, className: 'text-muted-foreground' },
-  failed: { icon: XCircleIcon, className: 'text-destructive' },
+const NODE: Record<StageRunStatus, string> = {
+  pending: 'border border-border bg-card text-muted-foreground',
+  running: 'bg-info-soft text-info ring-4 ring-info-soft',
+  completed: 'bg-primary text-primary-foreground',
+  reused: 'bg-info-soft text-info',
+  overridden: 'bg-violet-soft text-violet',
+  failed: 'bg-destructive text-white',
 };
 
 interface StageUsage {
@@ -33,38 +26,61 @@ function usageOf(metrics: unknown): StageUsage {
   return metrics && typeof metrics === 'object' ? (metrics as StageUsage) : {};
 }
 
+function NodeIcon({ status, index }: { status: StageRunStatus; index: number }) {
+  if (status === 'completed') return <CheckIcon className="size-3.5" strokeWidth={3} />;
+  if (status === 'running') return <Spinner className="size-3.5" />;
+  if (status === 'failed') return <XIcon className="size-3.5" strokeWidth={3} />;
+  if (status === 'reused') return <RecycleIcon className="size-3.5" />;
+  if (status === 'overridden') return <PencilLineIcon className="size-3.5" />;
+  return <span className="text-xs font-semibold tabular-nums">{index + 1}</span>;
+}
+
 export function StageStepper({ stages }: { stages: Record<StageName, LiveStage> }) {
   return (
-    <ol className="flex flex-col gap-1" aria-label="Etapas da execução">
+    <ol className="flex flex-col" aria-label="Etapas">
       {STAGE_ORDER.map((name, i) => {
         const stage = stages[name];
-        const { icon: Icon, className } = ICONS[stage.status];
         const usage = usageOf(stage.metrics);
         const tokens = (usage.inputTokens ?? 0) + (usage.outputTokens ?? 0);
         const isLast = i === STAGE_ORDER.length - 1;
+        const done = stage.status === 'completed' || stage.status === 'reused' || stage.status === 'overridden';
         return (
           <li key={name} className="flex gap-3" aria-current={stage.status === 'running' ? 'step' : undefined}>
             <div className="flex flex-col items-center">
-              <Icon className={cn('mt-0.5 size-5 shrink-0', className)} aria-hidden />
-              {!isLast && <div className="my-1 w-px flex-1 bg-border" />}
+              <span
+                className={cn('flex size-7 shrink-0 items-center justify-center rounded-full', NODE[stage.status])}
+                aria-hidden
+              >
+                <NodeIcon status={stage.status} index={i} />
+              </span>
+              {!isLast && (
+                <span className={cn('my-1 w-0.5 flex-1 rounded-full', done ? 'bg-primary/40' : 'bg-border')} />
+              )}
             </div>
-            <div className="flex min-w-0 flex-1 flex-col gap-1 pb-4">
+            <div className="flex min-w-0 flex-1 flex-col gap-1 pt-0.5 pb-5">
               <div className="flex items-baseline justify-between gap-2">
-                <span className="font-medium">{STAGE_LABELS[name]}</span>
-                <span className="text-xs text-muted-foreground">{STAGE_RUN_STATUS_LABELS[stage.status]}</span>
+                <span className={cn('font-medium', stage.status === 'pending' && 'text-muted-foreground')}>
+                  {STAGE_LABELS[name]}
+                </span>
+                {stage.status !== 'pending' && (
+                  <span className="text-xs text-muted-foreground">{STAGE_RUN_STATUS_LABELS[stage.status]}</span>
+                )}
               </div>
-              {stage.lastMessage && <p className="text-sm text-muted-foreground">{stage.lastMessage}</p>}
+              {stage.status === 'running' && stage.lastMessage && (
+                <p className="text-sm text-muted-foreground">{stage.lastMessage}</p>
+              )}
               {stage.status === 'running' && stage.total ? (
                 <Progress
                   value={((stage.current ?? 0) / stage.total) * 100}
                   aria-label={`Progresso de ${STAGE_LABELS[name]}`}
+                  className="h-1.5"
                 />
               ) : null}
               {(stage.durationMs !== null || tokens > 0) && (
-                <p className="text-xs text-muted-foreground tabular-nums">
-                  {formatDuration(stage.durationMs)}
-                  {tokens > 0 && ` · ${formatNumber(tokens)} tokens`}
-                  {usage.costUsd ? ` · ${formatUsd(usage.costUsd)}` : ''}
+                <p className="flex flex-wrap gap-x-3 text-xs text-muted-foreground tabular-nums">
+                  <span>{formatDuration(stage.durationMs)}</span>
+                  {tokens > 0 && <span>{formatNumber(tokens)} tokens</span>}
+                  {usage.costUsd ? <span>{formatUsd(usage.costUsd)}</span> : null}
                 </p>
               )}
             </div>

@@ -4,11 +4,11 @@ import { GitCompareArrowsIcon, RotateCcwIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProviders } from '../documents/queries';
 import { CancelButton } from './cancel-button';
 import { ExportMenu } from './export-menu';
+import { ProcessingView } from './processing-view';
 import { useRun } from './queries';
 import { RerunDialog } from './rerun-dialog';
 import { ResumeCard } from './resume-card';
@@ -24,28 +24,34 @@ export function RunPage({ runId }: { runId: string }) {
   const providers = useProviders();
   const [rerunOpen, setRerunOpen] = useState(false);
 
-  if (run.isPending) return <Skeleton className="h-40 w-full" />;
+  if (run.isPending)
+    return (
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 pt-10">
+        <Skeleton className="h-9 w-72" />
+        <Skeleton className="h-64 w-full rounded-3xl" />
+      </div>
+    );
   if (run.isError)
     return (
-      <Alert variant="destructive">
-        <AlertTitle>Não foi possível carregar a execução</AlertTitle>
+      <Alert variant="destructive" className="mx-auto mt-10 max-w-xl">
+        <AlertTitle>Não deu para abrir este resultado</AlertTitle>
         <AlertDescription>{run.error.message}</AlertDescription>
       </Alert>
     );
 
   const status = live?.status ?? run.data.status;
   const finished = TERMINAL_RUN_STATUSES.includes(status);
+  const completed = run.data.status === 'completed' || status === 'completed';
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
       <RunHeader
         run={run.data}
         live={live}
         actions={
           <>
             <CancelButton runId={runId} status={status} />
-            <ExportMenu run={run.data} />
-            {status === 'completed' && (
-              <Button asChild variant="outline">
+            {completed && (
+              <Button asChild variant="ghost">
                 <Link to="/compare" search={{ from: runId }}>
                   <GitCompareArrowsIcon data-icon="inline-start" />
                   Comparar
@@ -53,42 +59,32 @@ export function RunPage({ runId }: { runId: string }) {
               </Button>
             )}
             {finished && (
-              <Button variant="outline" onClick={() => setRerunOpen(true)} disabled={!providers.data}>
+              <Button variant="ghost" onClick={() => setRerunOpen(true)} disabled={!providers.data}>
                 <RotateCcwIcon data-icon="inline-start" />
-                Reprocessar
+                Refazer
               </Button>
             )}
+            {completed && <ExportMenu run={run.data} />}
           </>
         }
       />
       {providers.data && rerunOpen && (
         <RerunDialog run={run.data} providers={providers.data} open onOpenChange={setRerunOpen} />
       )}
-      <div className="grid gap-6 lg:grid-cols-[18rem_1fr]">
-        <Card className="h-fit">
-          <CardHeader>
-            <CardTitle>Etapas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {live ? <StageStepper stages={live.stages} /> : <Skeleton className="h-64 w-full" />}
-          </CardContent>
-        </Card>
-        <div className="flex min-w-0 flex-col gap-4">
-          {!finished ? (
-            <div className="flex flex-col gap-3" role="status" aria-busy="true" aria-label="Processando">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-48 w-full" />
-              <Skeleton className="h-32 w-full" />
+      {!finished ? (
+        <ProcessingView live={live} />
+      ) : completed ? (
+        <RunTabs runId={runId} live={live} />
+      ) : (
+        <div className="grid gap-6 md:grid-cols-[1fr_18rem]">
+          {status === 'interrupted' ? <ResumeCard run={run.data} /> : <RunErrorCard run={run.data} />}
+          {live && (
+            <div className="rounded-3xl border bg-card p-5">
+              <StageStepper stages={live.stages} />
             </div>
-          ) : run.data.status === 'completed' || status === 'completed' ? (
-            <RunTabs runId={runId} live={live} />
-          ) : status === 'interrupted' ? (
-            <ResumeCard run={run.data} />
-          ) : (
-            <RunErrorCard run={run.data} />
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 }

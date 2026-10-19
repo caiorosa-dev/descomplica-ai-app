@@ -41,3 +41,20 @@ export function formatScore(n: number | null): string {
 export const formatUsd = (n: number) => `US$ ${usd.format(n)}`;
 
 export const formatNumber = (n: number) => n.toLocaleString('pt-BR');
+
+export function formatBytes(n: number): string {
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${Math.round(n / 1024)} KB`;
+  return `${(n / (1024 * 1024)).toFixed(1).replace('.', ',')} MB`;
+}
+
+/** "hoje, 14:32", "ontem" or a plain date, the way people refer to recent files. */
+export function formatWhen(iso: string, now = new Date()): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const day = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diffDays = Math.round((day(now) - day(d)) / 86_400_000);
+  if (diffDays === 0) return `hoje, ${d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+  if (diffDays === 1) return 'ontem';
+  return d.toLocaleDateString('pt-BR');
+}

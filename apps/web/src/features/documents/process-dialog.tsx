@@ -57,7 +57,7 @@ export function ProcessDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Processar documento</DialogTitle>
+          <DialogTitle>Simplificar documento</DialogTitle>
           <DialogDescription>{document.filename}</DialogDescription>
         </DialogHeader>
         <FieldGroup>
@@ -86,7 +86,7 @@ export function ProcessDialog({
                 </SelectGroup>
               </SelectContent>
             </Select>
-            <FieldDescription>O preset define os modelos e as estratégias de cada etapa.</FieldDescription>
+            <FieldDescription>Define os modelos usados em cada etapa.</FieldDescription>
           </Field>
         </FieldGroup>
         <DialogFooter>
@@ -95,7 +95,7 @@ export function ProcessDialog({
           </Button>
           <Button disabled={!presetId || pending} onClick={() => presetId && onConfirm?.(presetId)}>
             {pending && <Spinner data-icon="inline-start" />}
-            Processar
+            Simplificar
           </Button>
         </DialogFooter>
       </DialogContent>

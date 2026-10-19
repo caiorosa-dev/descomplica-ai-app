@@ -36,15 +36,15 @@ export function PresetsPage() {
   const fail = (e: unknown, fallback: string) => toast.error(e instanceof ApiError ? e.message : fallback);
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 pt-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="font-heading text-2xl font-semibold">Presets</h1>
+        <div className="flex flex-col gap-1">
+          <h1 className="text-3xl font-semibold">Presets</h1>
           <p className="text-muted-foreground">
-            Configurações completas da pipeline. Os padrões são somente leitura; duplique para alterar.
+            Quais modelos e estratégias cada etapa usa. Duplique um padrão para editar.
           </p>
         </div>
-        <Button onClick={() => setEditing({ preset: null })}>
+        <Button className="rounded-full" onClick={() => setEditing({ preset: null })}>
           <PlusIcon data-icon="inline-start" />
           Novo preset
         </Button>
@@ -60,17 +60,17 @@ export function PresetsPage() {
           {(presets.data ?? []).map((preset) => (
             <Card key={preset.id}>
               <CardHeader>
-                <CardTitle>{preset.name}</CardTitle>
+                <CardTitle className="font-heading text-lg">{preset.name}</CardTitle>
                 <CardDescription>{preset.slug}</CardDescription>
                 <CardAction className="flex gap-1">
-                  {preset.isBuiltin && <ToneBadge tone="neutral">Padrão</ToneBadge>}
+                  {preset.isBuiltin && <ToneBadge tone="info">Padrão</ToneBadge>}
                 </CardAction>
               </CardHeader>
               <div className="flex flex-col gap-3 px-6 text-sm">
                 <p className="text-muted-foreground">{preset.description}</p>
                 <div className="flex flex-wrap gap-1">
                   {[...requiredProviders(preset.config)].map((p) => (
-                    <ToneBadge key={p} tone="neutral">
+                    <ToneBadge key={p} tone={p === 'openai' ? 'teal' : 'violet'}>
                       {p === 'openai' ? 'OpenAI' : 'Anthropic'}
                     </ToneBadge>
                   ))}

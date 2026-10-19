@@ -14,13 +14,9 @@ export function ExportMenu({ run }: { run: RunDto }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          disabled={disabled}
-          title={disabled ? 'Disponível quando a execução terminar' : undefined}
-        >
+        <Button disabled={disabled}>
           <DownloadIcon data-icon="inline-start" />
-          Exportar
+          Baixar
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

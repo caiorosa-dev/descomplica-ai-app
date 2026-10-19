@@ -1,7 +1,5 @@
 import type { RunResultDto, RunTextDto, Severity } from '@app/shared';
 import { ToneBadge } from '@/components/tone-badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { formatNumber } from '@/lib/format';
 import { SEVERITY_LABELS } from '@/lib/labels';
@@ -32,27 +30,40 @@ export function SummaryTab({ result, text }: { result: RunResultDto; text: RunTe
   let chunk = 0;
 
   return (
-    <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">{summary.title}</CardTitle>
-          <CardDescription>Resumo em linguagem simples, gerado a partir do documento.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-6">
-          <div className="rounded-lg border bg-muted/40 p-4">
-            <p className="mb-1 text-sm font-medium text-muted-foreground">Em resumo</p>
-            <p
-              className={cn(
-                'leading-relaxed',
-                lowSupport.has('P00') && 'underline decoration-dotted underline-offset-4',
-              )}
-            >
-              {summary.overview}
-            </p>
-          </div>
+    <article className="flex flex-col gap-8">
+      <header className="flex flex-col gap-4">
+        <h2 className="max-w-[28ch] text-3xl font-semibold text-balance">{summary.title}</h2>
+        <div className="flex flex-wrap gap-2 text-sm">
+          <Stat
+            label="Leitura"
+            value={`${formatOne(readability.source)} → ${formatOne(readability.summary)}`}
+            hint="Índice Flesch do original e do resumo. Quanto maior, mais fácil de ler."
+          />
+          <Stat
+            label="Tamanho"
+            value={
+              compressionRatio >= 1
+                ? `${formatOne(compressionRatio)}x menor`
+                : `${formatOne(1 / compressionRatio)}x maior`
+            }
+            hint="Palavras do original divididas pelas palavras do resumo."
+          />
+          <Stat label="Dados" value={formatNumber(result.facts.length)} hint="Dados extraídos que apoiam o resumo." />
+        </div>
+      </header>
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_17rem]">
+        <div className="flex max-w-[68ch] flex-col gap-8">
+          <p
+            className={cn(
+              'rounded-3xl bg-secondary p-6 text-lg leading-relaxed text-secondary-foreground',
+              lowSupport.has('P00') && 'underline decoration-dotted underline-offset-4',
+            )}
+          >
+            {summary.overview}
+          </p>
           {summary.sections.map((section, si) => (
             <section key={section.heading} className="flex flex-col gap-3">
-              <h3 className="font-heading text-lg font-semibold">{section.heading}</h3>
+              <h3 className="text-xl font-semibold">{section.heading}</h3>
               {section.paragraphs.map((p, pi) => {
                 chunk++;
                 const severity = alertAt.get(`${si}:${pi}`);
@@ -70,18 +81,18 @@ export function SummaryTab({ result, text }: { result: RunResultDto; text: RunTe
                 );
                 return (
                   <div key={p.text} className="flex flex-col gap-2">
-                    <p className="leading-relaxed">
+                    <p className="leading-relaxed text-foreground/90">
                       {severity ? (
                         <Tooltip>
                           <TooltipTrigger asChild>{body}</TooltipTrigger>
                           <TooltipContent>
-                            Alerta de severidade {SEVERITY_LABELS[severity].toLowerCase()} na verificação
+                            Alerta de prioridade {SEVERITY_LABELS[severity].toLowerCase()}
                           </TooltipContent>
                         </Tooltip>
                       ) : weak ? (
                         <Tooltip>
                           <TooltipTrigger asChild>{body}</TooltipTrigger>
-                          <TooltipContent>Pouco respaldo semântico no documento</TooltipContent>
+                          <TooltipContent>Pouco apoio no texto original</TooltipContent>
                         </Tooltip>
                       ) : (
                         body
@@ -95,9 +106,7 @@ export function SummaryTab({ result, text }: { result: RunResultDto; text: RunTe
                             <Tooltip key={id}>
                               <TooltipTrigger asChild>
                                 <button type="button" className="rounded-full">
-                                  <ToneBadge tone={fact?.status === 'uncertain' ? 'warning' : 'neutral'}>
-                                    {id}
-                                  </ToneBadge>
+                                  <ToneBadge tone={fact?.status === 'uncertain' ? 'warning' : 'info'}>{id}</ToneBadge>
                                 </button>
                               </TooltipTrigger>
                               <TooltipContent>
@@ -106,7 +115,7 @@ export function SummaryTab({ result, text }: { result: RunResultDto; text: RunTe
                                     {fact.label}: <FactValue fact={fact} />
                                   </span>
                                 ) : (
-                                  'Fato não encontrado'
+                                  'Dado não encontrado'
                                 )}
                               </TooltipContent>
                             </Tooltip>
@@ -119,53 +128,37 @@ export function SummaryTab({ result, text }: { result: RunResultDto; text: RunTe
               })}
             </section>
           ))}
-        </CardContent>
-      </Card>
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardDescription>Legibilidade (Flesch, original → resumo)</CardDescription>
-            <CardTitle className="text-2xl tabular-nums">
-              {readability.source.toFixed(1).replace('.', ',')} → {readability.summary.toFixed(1).replace('.', ',')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            Quanto maior, mais fácil de ler. A contagem de sílabas é aproximada.
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardDescription>Compressão</CardDescription>
-            <CardTitle className="text-2xl tabular-nums">
-              {compressionRatio.toFixed(1).replace('.', ',')} vezes menor
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            Palavras do original divididas pelas palavras do resumo.
-          </CardContent>
-        </Card>
-      </div>
-      {summary.glossary.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Glossário</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <dl className="flex flex-col gap-3">
-              {summary.glossary.map((g, i) => (
+        </div>
+        {summary.glossary.length > 0 && (
+          <aside className="h-fit rounded-3xl border bg-card p-5 lg:sticky lg:top-20">
+            <h3 className="mb-3 font-semibold">Palavras difíceis</h3>
+            <dl className="flex flex-col gap-4 text-sm">
+              {summary.glossary.map((g) => (
                 <div key={g.term} className="flex flex-col gap-1">
-                  {i > 0 && <Separator className="mb-2" />}
                   <dt className="font-medium">{g.term}</dt>
                   <dd className="text-muted-foreground">{g.explanation}</dd>
                 </div>
               ))}
             </dl>
-          </CardContent>
-        </Card>
-      )}
-      <p className="text-xs text-muted-foreground">
-        {formatNumber(result.facts.length)} fatos extraídos apoiam este resumo.
-      </p>
-    </div>
+          </aside>
+        )}
+      </div>
+    </article>
+  );
+}
+
+const formatOne = (n: number) => n.toFixed(1).replace('.', ',');
+
+function Stat({ label, value, hint }: { label: string; value: string; hint: string }) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="flex items-center gap-2 rounded-full border bg-card px-3 py-1.5">
+          <span className="text-muted-foreground">{label}</span>
+          <span className="font-heading font-semibold tabular-nums">{value}</span>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-xs">{hint}</TooltipContent>
+    </Tooltip>
   );
 }

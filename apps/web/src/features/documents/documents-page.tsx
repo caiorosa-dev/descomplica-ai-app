@@ -1,63 +1,109 @@
 import type { DocumentDto } from '@app/shared';
-import { FileTextIcon } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { Mascot } from '@/components/mascot';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { ApiError } from '@/lib/api-client';
-import { DocumentsTable } from './documents-table';
+import { Composer } from './composer';
+import { DocumentList } from './document-list';
 import { ProcessDialog } from './process-dialog';
-import { useCreateRun, useDocuments, usePresets, useProviders } from './queries';
-import { UploadDropzone } from './upload-dropzone';
+import { useCreateRun, useDocuments, usePresets, useProviders, useUploadDocument } from './queries';
+
+type Filter = 'upload' | 'corpus';
 
 export function DocumentsPage() {
   const documents = useDocuments();
   const presets = usePresets();
   const providers = useProviders();
   const createRun = useCreateRun();
+  const upload = useUploadDocument();
   const [processing, setProcessing] = useState<DocumentDto | null>(null);
+  const [filter, setFilter] = useState<Filter | null>(null);
+
+  const all = documents.data ?? [];
+  const uploads = all.filter((d) => d.source === 'upload');
+  const corpus = all.filter((d) => d.source === 'corpus');
+  const active: Filter = filter ?? (uploads.length > 0 || corpus.length === 0 ? 'upload' : 'corpus');
+  const shown = active === 'upload' ? uploads : corpus;
+
+  const start = (documentId: string, presetId: string) =>
+    createRun.mutate(
+      { documentId, presetId },
+      { onError: (e) => toast.error(e instanceof ApiError ? e.message : 'Não foi possível começar.') },
+    );
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-heading text-2xl font-semibold">Documentos</h1>
-        <p className="text-muted-foreground">Envie decisões judiciais ou atos normativos e acompanhe as execuções.</p>
-      </div>
-      <UploadDropzone />
-      <Card>
-        <CardHeader>
-          <CardTitle>Documentos cadastrados</CardTitle>
-          <CardDescription>Envios e documentos do corpus de avaliação.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {documents.isPending ? (
-            <div className="flex flex-col gap-2">
-              {[0, 1, 2].map((i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </div>
-          ) : documents.isError ? (
-            <Alert variant="destructive">
-              <AlertTitle>Não foi possível carregar os documentos</AlertTitle>
-              <AlertDescription>{documents.error.message}</AlertDescription>
-            </Alert>
-          ) : documents.data.length === 0 ? (
-            <Empty>
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <FileTextIcon />
-                </EmptyMedia>
-                <EmptyTitle>Nenhum documento ainda</EmptyTitle>
-                <EmptyDescription>Envie um documento ou rode o seed para carregar o corpus.</EmptyDescription>
-              </EmptyHeader>
-            </Empty>
-          ) : (
-            <DocumentsTable documents={documents.data} onProcess={setProcessing} />
-          )}
-        </CardContent>
-      </Card>
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-14 pt-[8vh]">
+      <section className="flex flex-col gap-6">
+        <h1 className="text-center font-heading text-4xl font-semibold text-balance md:text-5xl">
+          Qual documento você quer entender?
+        </h1>
+        {presets.data && providers.data ? (
+          <Composer
+            presets={presets.data}
+            providers={providers.data}
+            onUpload={(file, onProgress) => upload.mutateAsync({ file, onProgress })}
+            onSubmit={start}
+            submitting={createRun.isPending}
+          />
+        ) : presets.isError || providers.isError ? (
+          <Alert variant="destructive">
+            <AlertTitle>A API não respondeu</AlertTitle>
+            <AlertDescription>Confira se o servidor está rodando e recarregue a página.</AlertDescription>
+          </Alert>
+        ) : (
+          <Skeleton className="h-52 w-full rounded-[1.75rem]" />
+        )}
+      </section>
+
+      <section className="flex flex-col gap-3" aria-labelledby="docs-title">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="docs-title" className="text-lg font-semibold">
+            Seus documentos
+          </h2>
+          <ToggleGroup
+            type="single"
+            size="sm"
+            value={active}
+            onValueChange={(v) => v && setFilter(v as Filter)}
+            className="rounded-full bg-muted p-0.5"
+            aria-label="Filtrar documentos"
+          >
+            <ToggleGroupItem value="upload" className="rounded-full px-3 data-[state=on]:bg-card">
+              Enviados <span className="text-muted-foreground tabular-nums">{uploads.length}</span>
+            </ToggleGroupItem>
+            <ToggleGroupItem value="corpus" className="rounded-full px-3 data-[state=on]:bg-card">
+              Corpus <span className="text-muted-foreground tabular-nums">{corpus.length}</span>
+            </ToggleGroupItem>
+          </ToggleGroup>
+        </div>
+        {documents.isPending ? (
+          <div className="flex flex-col gap-2">
+            {[0, 1, 2].map((i) => (
+              <Skeleton key={i} className="h-16 w-full rounded-2xl" />
+            ))}
+          </div>
+        ) : documents.isError ? (
+          <Alert variant="destructive">
+            <AlertTitle>Não deu para carregar a lista</AlertTitle>
+            <AlertDescription>{documents.error.message}</AlertDescription>
+          </Alert>
+        ) : shown.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 rounded-3xl border border-dashed p-8 text-center">
+            <Mascot state="sleeping" size={64} />
+            <p className="text-sm text-muted-foreground">
+              {active === 'upload'
+                ? 'Os arquivos que você enviar aparecem aqui.'
+                : 'Rode o seed para carregar o corpus.'}
+            </p>
+          </div>
+        ) : (
+          <DocumentList documents={shown} onProcess={setProcessing} />
+        )}
+      </section>
+
       {processing && presets.data && providers.data && (
         <ProcessDialog
           document={processing}
@@ -66,12 +112,7 @@ export function DocumentsPage() {
           open
           onOpenChange={(open) => !open && setProcessing(null)}
           pending={createRun.isPending}
-          onConfirm={(presetId) =>
-            createRun.mutate(
-              { documentId: processing.id, presetId },
-              { onError: (e) => toast.error(e instanceof ApiError ? e.message : 'Não foi possível criar a execução.') },
-            )
-          }
+          onConfirm={(presetId) => start(processing.id, presetId)}
         />
       )}
     </div>
