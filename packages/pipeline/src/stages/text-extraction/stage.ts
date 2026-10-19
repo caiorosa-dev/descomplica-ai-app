@@ -1,5 +1,4 @@
 import { type RemovedLine, TextExtractionOutput } from '@app/shared';
-import type { StageContext } from '../../core/context';
 import { PipelineError } from '../../core/errors';
 import type { Stage } from '../../core/stage';
 import { countTokens } from '../../core/tokens';
@@ -7,6 +6,7 @@ import { buildCanonicalText } from './assembly/canonical';
 import { dehyphenate } from './assembly/dehyphenate';
 import { paragraphBreaks } from './assembly/paragraphs';
 import { removeBoilerplate } from './cleaning/boilerplate';
+import { applyLlmCleanup } from './cleaning/llm-cleanup';
 import { normalizeUnicode } from './cleaning/normalize-unicode';
 import { removePageNumbers } from './cleaning/page-numbers';
 import { removeRepeatedEdges } from './cleaning/repeated-edges';
@@ -19,11 +19,6 @@ export interface TextExtractionInput {
   buffer: Uint8Array;
   filename: string;
 }
-
-export type LlmCleanupFn = (doc: LineDocument, mode: 'edges' | 'full', ctx: StageContext) => Promise<CleaningResult>;
-
-/** Replaced by the LLM cleaner (Task 10); never called while `llmCleanup` is 'off'. */
-export const llmCleanupHook: LlmCleanupFn = async (doc) => ({ doc, removed: [] });
 
 function regroup(doc: LineDocument, lines: Line[]): LineDocument {
   return { ...doc, pages: doc.pages.map((page) => ({ ...page, lines: lines.filter((l) => l.page === page.number) })) };
@@ -84,7 +79,7 @@ export const textExtractionStage: Stage<TextExtractionInput, TextExtractionOutpu
     }
     if (config.cleaning.llmCleanup !== 'off') {
       progress('Limpando com o modelo de linguagem');
-      apply(await llmCleanupHook(doc, config.cleaning.llmCleanup, ctx));
+      apply(await applyLlmCleanup(doc, config.cleaning.llmCleanup, ctx));
     }
 
     let lines = allLines(doc);
