@@ -1,0 +1,162 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/space-grotesk";
+@import "@fontsource-variable/ibm-plex-sans";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-heading: "Space Grotesk Variable", var(--font-sans);
+  --font-sans: "IBM Plex Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-warning-vivid: var(--warning-vivid);
+  --color-info: var(--info);
+  --color-violet: var(--violet);
+  --color-teal: var(--teal);
+  --color-success-soft: var(--success-soft);
+  --color-warning-soft: var(--warning-soft);
+  --color-info-soft: var(--info-soft);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-violet-soft: var(--violet-soft);
+  --color-teal-soft: var(--teal-soft);
+  --color-neutral-soft: var(--neutral-soft);
+  --color-neutral-tone: var(--neutral-tone);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --color-brand-navy: #0d1633;
+  --color-brand-blue: #3043d6;
+  --color-brand-periwinkle: #8b9bff;
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* Palette taken from the DescomplicaAI deck: navy, royal blue, lavender chips, rust for what is critical. */
+:root {
+  --background: #f4f5f9;
+  --foreground: #0d1633;
+  --card: #ffffff;
+  --card-foreground: #0d1633;
+  --popover: #ffffff;
+  --popover-foreground: #0d1633;
+  --primary: #3043d6;
+  --primary-foreground: #ffffff;
+  --secondary: #e4e8fc;
+  --secondary-foreground: #2533a8;
+  --muted: #eaecf3;
+  --muted-foreground: #556080;
+  --accent: #e4e8fc;
+  --accent-foreground: #2533a8;
+  --destructive: #c2410c;
+  --border: #dde1ec;
+  --input: #d3d8e6;
+  --ring: #3043d6;
+  /* Badge tones: strong text on a soft fill of the same hue. */
+  --success: #1a7f4e;
+  --success-soft: #dff3e8;
+  --warning: #9a5b00;
+  --warning-vivid: #f2a516;
+  --warning-soft: #fff0c7;
+  --info: #2b3bc4;
+  --info-soft: #e4e8fc;
+  --destructive-soft: #fce6dc;
+  --violet: #6a33d1;
+  --violet-soft: #eee6fd;
+  --teal: #0d7468;
+  --teal-soft: #dbf2ee;
+  --neutral-tone: #4a5372;
+  --neutral-soft: #e9ecf3;
+  --chart-1: #3043d6;
+  --chart-2: #c2410c;
+  --chart-3: #8b9bff;
+  --chart-4: #0d7468;
+  --chart-5: #a0abcb;
+  --radius: 0.75rem;
+  --shadow-float: 0 1px 2px rgb(13 22 51 / 0.04), 0 12px 32px -16px rgb(13 22 51 / 0.18);
+}
+
+.dark {
+  --background: #0d1633;
+  --foreground: #f2f4fa;
+  --card: #141e45;
+  --card-foreground: #f2f4fa;
+  --popover: #18234f;
+  --popover-foreground: #f2f4fa;
+  --primary: #3d50e0;
+  --primary-foreground: #ffffff;
+  --secondary: #1e2a5c;
+  --secondary-foreground: #c9d0ff;
+  --muted: #1a2552;
+  --muted-foreground: #a3add2;
+  --accent: #1e2a5c;
+  --accent-foreground: #c9d0ff;
+  --destructive: #ff9466;
+  --border: #26336a;
+  --input: #2c3a75;
+  --ring: #8b9bff;
+  --success: #6edba2;
+  --success-soft: rgb(110 219 162 / 0.13);
+  --warning: #f2c76b;
+  --warning-vivid: #f5b942;
+  --warning-soft: rgb(242 199 107 / 0.13);
+  --info: #a9b5ff;
+  --info-soft: rgb(139 155 255 / 0.16);
+  --destructive-soft: rgb(255 148 102 / 0.14);
+  --violet: #c7abff;
+  --violet-soft: rgb(167 139 250 / 0.15);
+  --teal: #73dccb;
+  --teal-soft: rgb(115 220 203 / 0.13);
+  --neutral-tone: #b5bdd9;
+  --neutral-soft: rgb(255 255 255 / 0.07);
+  --chart-1: #8b9bff;
+  --chart-2: #ff9466;
+  --chart-3: #3d50e0;
+  --chart-4: #73dccb;
+  --chart-5: #a3add2;
+  --shadow-float: 0 1px 2px rgb(0 0 0 / 0.2), 0 16px 40px -18px rgb(0 0 0 / 0.55);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  html {
+    @apply font-sans;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading tracking-[-0.015em];
+  }
+}

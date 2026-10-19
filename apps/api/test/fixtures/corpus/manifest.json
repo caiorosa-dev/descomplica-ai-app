@@ -1,0 +1,20 @@
+[
+  {
+    "key": "stj-resp-1-sp",
+    "file": "stj/resp-1-sp.txt",
+    "issuer": "STJ",
+    "title": "REsp 1/SP (fixture)",
+    "expectedType": "court_decision",
+    "expectedSubtype": null,
+    "version": "original"
+  },
+  {
+    "key": "cnj-res-1-2024",
+    "file": "cnj/res-1-2024.txt",
+    "issuer": "CNJ",
+    "title": "Resolução 1/2024 (fixture)",
+    "expectedType": "normative_act",
+    "expectedSubtype": null,
+    "version": "original"
+  }
+]

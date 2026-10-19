@@ -1,0 +1,182 @@
+[
+  {
+    "key": "stj-resp-1969219-sp",
+    "file": "stj/resp-1969219-sp.pdf",
+    "issuer": "STJ",
+    "title": "REsp 1.969.219/SP",
+    "expectedType": "court_decision",
+    "expectedSubtype": null,
+    "version": "original"
+  },
+  {
+    "key": "stj-resp-1999905-rs",
+    "file": "stj/resp-1999905-rs.pdf",
+    "issuer": "STJ",
+    "title": "REsp 1.999.905/RS",
+    "expectedType": "court_decision",
+    "expectedSubtype": null,
+    "version": "original"
+  },
+  {
+    "key": "stj-resp-2025013-rj",
+    "file": "stj/resp-2025013-rj.pdf",
+    "issuer": "STJ",
+    "title": "REsp 2.025.013/RJ",
+    "expectedType": "court_decision",
+    "expectedSubtype": null,
+    "version": "original"
+  },
+  {
+    "key": "stj-agint-agint-resp-1975502-sp",
+    "file": "stj/agint-agint-resp-1975502-sp.pdf",
+    "issuer": "STJ",
+    "title": "AgInt no AgInt no REsp 1.975.502/SP",
+    "expectedType": "court_decision",
+    "expectedSubtype": null,
+    "version": "original"
+  },
+  {
+    "key": "stj-resp-2136836-sp",
+    "file": "stj/resp-2136836-sp.pdf",
+    "issuer": "STJ",
+    "title": "REsp 2.136.836/SP",
+    "expectedType": "court_decision",
+    "expectedSubtype": null,
+    "version": "original"
+  },
+  {
+    "key": "stj-resp-2186037-am",
+    "file": "stj/resp-2186037-am.pdf",
+    "issuer": "STJ",
+    "title": "REsp 2.186.037/AM",
+    "expectedType": "court_decision",
+    "expectedSubtype": null,
+    "version": "original"
+  },
+  {
+    "key": "stj-resp-2200180-sp",
+    "file": "stj/resp-2200180-sp.pdf",
+    "issuer": "STJ",
+    "title": "REsp 2.200.180/SP",
+    "expectedType": "court_decision",
+    "expectedSubtype": null,
+    "version": "original"
+  },
+  {
+    "key": "stj-resp-2109311-rj",
+    "file": "stj/resp-2109311-rj.pdf",
+    "issuer": "STJ",
+    "title": "REsp 2.109.311/RJ",
+    "expectedType": "court_decision",
+    "expectedSubtype": null,
+    "version": "original"
+  },
+  {
+    "key": "stj-resp-2072052-rj",
+    "file": "stj/resp-2072052-rj.pdf",
+    "issuer": "STJ",
+    "title": "REsp 2.072.052/RJ",
+    "expectedType": "court_decision",
+    "expectedSubtype": null,
+    "version": "original"
+  },
+  {
+    "key": "stj-hc-989426-pr",
+    "file": "stj/hc-989426-pr.pdf",
+    "issuer": "STJ",
+    "title": "HC 989.426/PR",
+    "expectedType": "court_decision",
+    "expectedSubtype": null,
+    "version": "original"
+  },
+  {
+    "key": "cnj-res-335-2020",
+    "file": "cnj/res-335-2020.pdf",
+    "issuer": "CNJ",
+    "title": "Resolução CNJ nº 335/2020",
+    "expectedType": "normative_act",
+    "expectedSubtype": null,
+    "version": "compiled"
+  },
+  {
+    "key": "cnj-res-401-2021",
+    "file": "cnj/res-401-2021.pdf",
+    "issuer": "CNJ",
+    "title": "Resolução CNJ nº 401/2021",
+    "expectedType": "normative_act",
+    "expectedSubtype": null,
+    "version": "compiled"
+  },
+  {
+    "key": "cnj-res-455-2022",
+    "file": "cnj/res-455-2022.pdf",
+    "issuer": "CNJ",
+    "title": "Resolução CNJ nº 455/2022",
+    "expectedType": "normative_act",
+    "expectedSubtype": null,
+    "version": "compiled"
+  },
+  {
+    "key": "cnj-rec-144-2023",
+    "file": "cnj/rec-144-2023.pdf",
+    "issuer": "CNJ",
+    "title": "Recomendação CNJ nº 144/2023",
+    "expectedType": "normative_act",
+    "expectedSubtype": null,
+    "version": "original"
+  },
+  {
+    "key": "cnj-res-550-2024",
+    "file": "cnj/res-550-2024.pdf",
+    "issuer": "CNJ",
+    "title": "Resolução CNJ nº 550/2024",
+    "expectedType": "normative_act",
+    "expectedSubtype": "amendment",
+    "version": "original"
+  },
+  {
+    "key": "cnj-res-560-2024",
+    "file": "cnj/res-560-2024.pdf",
+    "issuer": "CNJ",
+    "title": "Resolução CNJ nº 560/2024",
+    "expectedType": "normative_act",
+    "expectedSubtype": "amendment",
+    "version": "original"
+  },
+  {
+    "key": "cnj-rec-154-2024",
+    "file": "cnj/rec-154-2024.pdf",
+    "issuer": "CNJ",
+    "title": "Recomendação CNJ nº 154/2024",
+    "expectedType": "normative_act",
+    "expectedSubtype": null,
+    "version": "original"
+  },
+  {
+    "key": "cnj-res-600-2024",
+    "file": "cnj/res-600-2024.pdf",
+    "issuer": "CNJ",
+    "title": "Resolução CNJ nº 600/2024",
+    "expectedType": "normative_act",
+    "expectedSubtype": null,
+    "version": "original"
+  },
+  {
+    "key": "cnj-res-615-2025",
+    "file": "cnj/res-615-2025.pdf",
+    "issuer": "CNJ",
+    "title": "Resolução CNJ nº 615/2025",
+    "expectedType": "normative_act",
+    "expectedSubtype": null,
+    "version": "compiled"
+  },
+  {
+    "key": "cnj-res-674-2026",
+    "file": "cnj/res-674-2026.pdf",
+    "issuer": "CNJ",
+    "title": "Resolução CNJ nº 674/2026",
+    "expectedType": "normative_act",
+    "expectedSubtype": "amendment",
+    "version": "original"
+  }
+]

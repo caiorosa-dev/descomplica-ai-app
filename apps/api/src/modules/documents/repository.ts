@@ -1,0 +1,83 @@
+import type { PrismaClient } from '@app/db';
+import { type DocumentDto, DocumentType, type RunStatus } from '@app/shared';
+import { z } from 'zod';
+
+const documentInclude = {
+  runs: {
+    orderBy: { createdAt: 'desc' as const },
+    select: {
+      id: true,
+      status: true,
+      stageRuns: {
+        where: { stage: { in: ['text_extraction' as const, 'information_extraction' as const] } },
+        // Metrics only: the outputs carry the whole canonical text and would make the list heavy.
+        select: { stage: true, metrics: true, reusedFrom: { select: { metrics: true } } },
+      },
+    },
+  },
+};
+
+const PagesMetric = z.object({ pages: z.number().int() });
+const TypeMetric = z.object({ documentType: DocumentType });
+
+type DocumentRow = NonNullable<Awaited<ReturnType<typeof findDocument>>>;
+
+function findDocument(prisma: PrismaClient, id: string) {
+  return prisma.document.findUnique({ where: { id }, include: documentInclude });
+}
+
+export function toDocumentDto(row: DocumentRow): DocumentDto {
+  const completed = row.runs.find((r) => r.status === 'completed');
+  const metricsOf = (stage: string) => {
+    const sr = completed?.stageRuns.find((s) => s.stage === stage);
+    return sr?.metrics ?? sr?.reusedFrom?.metrics ?? null;
+  };
+  const pages = PagesMetric.safeParse(metricsOf('text_extraction'));
+  const type = TypeMetric.safeParse(metricsOf('information_extraction'));
+  return {
+    id: row.id,
+    filename: row.filename,
+    mimeType: row.mimeType,
+    sizeBytes: row.sizeBytes,
+    sha256: row.sha256,
+    source: row.source,
+    corpusKey: row.corpusKey,
+    createdAt: row.createdAt.toISOString(),
+    detectedType: type.success ? type.data.documentType : null,
+    pages: pages.success ? pages.data.pages : null,
+    runCount: row.runs.length,
+    lastRunStatus: (row.runs[0]?.status as RunStatus | undefined) ?? null,
+    lastRunId: row.runs[0]?.id ?? null,
+  };
+}
+
+export function createDocumentsRepository(prisma: PrismaClient) {
+  return {
+    async get(id: string) {
+      const row = await findDocument(prisma, id);
+      return row ? toDocumentDto(row) : null;
+    },
+    async getRow(id: string) {
+      return prisma.document.findUnique({ where: { id } });
+    },
+    async findBySha(sha256: string) {
+      const row = await prisma.document.findUnique({ where: { sha256 }, include: documentInclude });
+      return row ? toDocumentDto(row) : null;
+    },
+    async list() {
+      const rows = await prisma.document.findMany({ orderBy: { createdAt: 'desc' }, include: documentInclude });
+      return rows.map(toDocumentDto);
+    },
+    async activeRunCount(id: string) {
+      return prisma.run.count({ where: { documentId: id, status: { in: ['queued', 'running'] } } });
+    },
+    /** Runs, stages and results go with it (cascade). */
+    async delete(id: string) {
+      await prisma.document.delete({ where: { id } });
+    },
+    async create(data: { filename: string; mimeType: string; sizeBytes: number; sha256: string; storagePath: string }) {
+      const row = await prisma.document.create({ data: { ...data, source: 'upload' }, include: documentInclude });
+      return toDocumentDto(row);
+    },
+  };
+}

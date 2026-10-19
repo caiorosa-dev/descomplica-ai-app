@@ -1,0 +1,392 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RunStatus {
+  queued
+  running
+  completed
+  failed
+  cancelled
+  interrupted
+}
+
+enum StageRunStatus {
+  pending
+  running
+  completed
+  failed
+  reused
+  overridden
+}
+
+enum StageName {
+  text_extraction
+  information_extraction
+  summarization
+  similarity
+  verification
+  report
+}
+
+enum DocumentSource {
+  upload
+  corpus
+}
+
+enum FactCategory {
+  date
+  deadline
+  monetary_value
+  obligation
+  decision
+  legal_reference
+  amendment
+}
+
+enum Confidence {
+  low
+  medium
+  high
+}
+
+enum FactStatus {
+  confirmed
+  uncertain
+}
+
+enum MatchType {
+  exact
+  fuzzy
+  not_found
+}
+
+enum Direction {
+  source_to_summary
+  summary_to_source
+}
+
+enum Verdict {
+  consistent
+  divergent
+  omitted
+  unverifiable
+  supported
+  unsupported
+}
+
+enum AlertType {
+  divergence
+  omission
+  unsupported_claim
+  unverifiable
+}
+
+enum Severity {
+  high
+  medium
+  low
+}
+
+enum DecidedBy {
+  code
+  llm
+}
+
+enum LlmCallStatus {
+  success
+  error
+}
+
+model Document {
+  id          String         @id @default(uuid()) @db.Uuid
+  filename    String
+  mimeType    String         @map("mime_type")
+  sizeBytes   Int            @map("size_bytes")
+  sha256      String         @unique
+  storagePath String         @map("storage_path")
+  source      DocumentSource
+  corpusKey   String?        @map("corpus_key")
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  runs        Run[]
+
+  @@map("documents")
+}
+
+model Preset {
+  id          String   @id @default(uuid()) @db.Uuid
+  slug        String   @unique
+  name        String
+  description String
+  config      Json
+  isBuiltin   Boolean  @default(false) @map("is_builtin")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  runs        Run[]
+
+  @@map("presets")
+}
+
+model Run {
+  id             String          @id @default(uuid()) @db.Uuid
+  documentId     String          @map("document_id") @db.Uuid
+  presetId       String?         @map("preset_id") @db.Uuid
+  parentRunId    String?         @map("parent_run_id") @db.Uuid
+  startFromStage StageName?      @map("start_from_stage")
+  label          String?
+  status         RunStatus
+  config         Json
+  configHash     String          @map("config_hash")
+  injectedFaults Json?           @map("injected_faults")
+  error          Json?
+  createdAt      DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  startedAt      DateTime?       @map("started_at") @db.Timestamptz(3)
+  finishedAt     DateTime?       @map("finished_at") @db.Timestamptz(3)
+  document       Document        @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  preset         Preset?         @relation(fields: [presetId], references: [id], onDelete: SetNull)
+  parentRun      Run?            @relation("RunParent", fields: [parentRunId], references: [id], onDelete: SetNull)
+  childRuns      Run[]           @relation("RunParent")
+  stageRuns      StageRun[]
+  events         RunEvent[]
+  llmCalls       LlmCall[]
+  embeddingCalls EmbeddingCall[]
+  metrics        RunMetrics?
+
+  @@index([documentId])
+  @@index([label])
+  @@map("runs")
+}
+
+model StageRun {
+  id                   String             @id @default(uuid()) @db.Uuid
+  runId                String             @map("run_id") @db.Uuid
+  stage                StageName
+  status               StageRunStatus
+  reusedFromStageRunId String?            @map("reused_from_stage_run_id") @db.Uuid
+  output               Json?
+  metrics              Json?
+  warnings             Json               @default("[]")
+  error                Json?
+  durationMs           Int?               @map("duration_ms")
+  createdAt            DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt            DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+  run                  Run                @relation(fields: [runId], references: [id], onDelete: Cascade)
+  reusedFrom           StageRun?          @relation("StageRunReuse", fields: [reusedFromStageRunId], references: [id], onDelete: SetNull)
+  reusedBy             StageRun[]         @relation("StageRunReuse")
+  llmCalls             LlmCall[]
+  embeddingCalls       EmbeddingCall[]
+  facts                ExtractedFact[]
+  summary              Summary?
+  claims               Claim[]
+  verificationItems    VerificationItem[]
+  alerts               Alert[]
+
+  @@unique([runId, stage])
+  @@map("stage_runs")
+}
+
+model RunEvent {
+  id        String     @id @default(uuid()) @db.Uuid
+  runId     String     @map("run_id") @db.Uuid
+  seq       Int
+  type      String
+  stage     StageName?
+  data      Json
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  run       Run        @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, seq])
+  @@map("run_events")
+}
+
+model LlmCall {
+  id              String        @id @default(uuid()) @db.Uuid
+  runId           String        @map("run_id") @db.Uuid
+  stageRunId      String        @map("stage_run_id") @db.Uuid
+  agent           String
+  agentVersion    String        @map("agent_version")
+  provider        String
+  model           String
+  params          Json
+  messages        Json
+  rawResponse     Json          @map("raw_response")
+  parsedOutput    Json?         @map("parsed_output")
+  inputTokens     Int           @map("input_tokens")
+  outputTokens    Int           @map("output_tokens")
+  reasoningTokens Int?          @map("reasoning_tokens")
+  costUsd         Float         @map("cost_usd")
+  latencyMs       Int           @map("latency_ms")
+  attempt         Int
+  status          LlmCallStatus
+  error           Json?
+  createdAt       DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  run             Run           @relation(fields: [runId], references: [id], onDelete: Cascade)
+  stageRun        StageRun      @relation(fields: [stageRunId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@map("llm_calls")
+}
+
+model EmbeddingCall {
+  id         String   @id @default(uuid()) @db.Uuid
+  runId      String   @map("run_id") @db.Uuid
+  stageRunId String   @map("stage_run_id") @db.Uuid
+  model      String
+  inputCount Int      @map("input_count")
+  tokens     Int
+  cacheHits  Int      @map("cache_hits")
+  costUsd    Float    @map("cost_usd")
+  latencyMs  Int      @map("latency_ms")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  run        Run      @relation(fields: [runId], references: [id], onDelete: Cascade)
+  stageRun   StageRun @relation(fields: [stageRunId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+  @@map("embedding_calls")
+}
+
+/// dimensions = 0 means "the model's default dimensions".
+model EmbeddingCache {
+  model      String
+  dimensions Int
+  textHash   String   @map("text_hash")
+  vector     Float[]  @db.Real
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@id([model, dimensions, textHash])
+  @@map("embedding_cache")
+}
+
+model ExtractedFact {
+  id                 String             @id @default(uuid()) @db.Uuid
+  stageRunId         String             @map("stage_run_id") @db.Uuid
+  key                String
+  category           FactCategory
+  label              String
+  value              Json
+  confidence         Confidence
+  status             FactStatus
+  uncertaintyReasons String[]           @map("uncertainty_reasons")
+  stageRun           StageRun           @relation(fields: [stageRunId], references: [id], onDelete: Cascade)
+  evidence           FactEvidence[]
+  verificationItems  VerificationItem[]
+
+  @@unique([stageRunId, key])
+  @@map("extracted_facts")
+}
+
+model FactEvidence {
+  id         String        @id @default(uuid()) @db.Uuid
+  factId     String        @map("fact_id") @db.Uuid
+  position   Int
+  quote      String
+  start      Int?
+  end        Int?
+  page       Int?
+  sectionId  String?       @map("section_id")
+  matchType  MatchType     @map("match_type")
+  matchScore Float?        @map("match_score")
+  fact       ExtractedFact @relation(fields: [factId], references: [id], onDelete: Cascade)
+
+  @@index([factId])
+  @@map("fact_evidence")
+}
+
+model Summary {
+  id                 String   @id @default(uuid()) @db.Uuid
+  stageRunId         String   @unique @map("stage_run_id") @db.Uuid
+  content            Json
+  readabilitySource  Float    @map("readability_source")
+  readabilitySummary Float    @map("readability_summary")
+  compressionRatio   Float    @map("compression_ratio")
+  stageRun           StageRun @relation(fields: [stageRunId], references: [id], onDelete: Cascade)
+
+  @@map("summaries")
+}
+
+model Claim {
+  id                String             @id @default(uuid()) @db.Uuid
+  stageRunId        String             @map("stage_run_id") @db.Uuid
+  key               String
+  text              String
+  paragraphRef      Json?              @map("paragraph_ref")
+  category          FactCategory?
+  value             Json?
+  stageRun          StageRun           @relation(fields: [stageRunId], references: [id], onDelete: Cascade)
+  verificationItems VerificationItem[]
+
+  @@unique([stageRunId, key])
+  @@map("claims")
+}
+
+model VerificationItem {
+  id          String         @id @default(uuid()) @db.Uuid
+  stageRunId  String         @map("stage_run_id") @db.Uuid
+  key         String
+  direction   Direction
+  verdict     Verdict
+  explanation String
+  factId      String?        @map("fact_id") @db.Uuid
+  claimId     String?        @map("claim_id") @db.Uuid
+  decidedBy   DecidedBy      @map("decided_by")
+  usedQuotes  Json           @map("used_quotes")
+  stageRun    StageRun       @relation(fields: [stageRunId], references: [id], onDelete: Cascade)
+  fact        ExtractedFact? @relation(fields: [factId], references: [id], onDelete: SetNull)
+  claim       Claim?         @relation(fields: [claimId], references: [id], onDelete: SetNull)
+  alerts      Alert[]
+
+  @@unique([stageRunId, key])
+  @@map("verification_items")
+}
+
+model Alert {
+  id                 String           @id @default(uuid()) @db.Uuid
+  stageRunId         String           @map("stage_run_id") @db.Uuid
+  verificationItemId String           @map("verification_item_id") @db.Uuid
+  key                String
+  type               AlertType
+  severity           Severity
+  category           FactCategory?
+  title              String
+  explanation        String
+  sourceEvidence     Json             @map("source_evidence")
+  summaryRef         Json?            @map("summary_ref")
+  stageRun           StageRun         @relation(fields: [stageRunId], references: [id], onDelete: Cascade)
+  verificationItem   VerificationItem @relation(fields: [verificationItemId], references: [id], onDelete: Cascade)
+
+  @@unique([stageRunId, key])
+  @@map("alerts")
+}
+
+model RunMetrics {
+  id                 String   @id @default(uuid()) @db.Uuid
+  runId              String   @unique @map("run_id") @db.Uuid
+  centroid           Float?
+  coverage           Float?
+  support            Float?
+  alignmentF1        Float?   @map("alignment_f1")
+  factualConsistency Float?   @map("factual_consistency")
+  claimSupport       Float?   @map("claim_support")
+  unverifiableCount  Int      @map("unverifiable_count")
+  factsConfirmed     Int      @map("facts_confirmed")
+  factsUncertain     Int      @map("facts_uncertain")
+  alertsHigh         Int      @map("alerts_high")
+  alertsMedium       Int      @map("alerts_medium")
+  alertsLow          Int      @map("alerts_low")
+  readabilitySource  Float?   @map("readability_source")
+  readabilitySummary Float?   @map("readability_summary")
+  compressionRatio   Float?   @map("compression_ratio")
+  inputTokens        Int      @map("input_tokens")
+  outputTokens       Int      @map("output_tokens")
+  costUsd            Float    @map("cost_usd")
+  durationMs         Int      @map("duration_ms")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  run                Run      @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@map("run_metrics")
+}

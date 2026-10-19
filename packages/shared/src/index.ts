@@ -1,0 +1,23 @@
+export const SHARED_PACKAGE = '@app/shared';
+
+export * from './api/analysis';
+export * from './api/documents';
+export * from './api/errors';
+export * from './api/presets';
+export * from './api/providers';
+export * from './api/runs';
+export * from './config/catalog';
+export * from './config/overrides';
+export * from './config/pipeline-config';
+export * from './config/presets';
+export * from './corpus';
+export * from './domain/document';
+export * from './domain/enums';
+export * from './domain/facts';
+export * from './domain/faults';
+export * from './domain/metrics';
+export * from './domain/similarity';
+export * from './domain/summary';
+export * from './domain/verification';
+export * from './events';
+export * from './export';
