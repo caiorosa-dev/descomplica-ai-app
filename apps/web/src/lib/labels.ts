@@ -83,3 +83,28 @@ export const ALERT_TYPE_LABELS: Record<AlertType, string> = {
 };
 
 export const SEVERITY_LABELS: Record<Severity, string> = { high: 'Alta', medium: 'Média', low: 'Baixa' };
+
+export const DATE_ROLE_LABELS = {
+  judgment: 'julgamento',
+  publication: 'publicação',
+  effective: 'vigência',
+  signature: 'assinatura',
+  filing: 'protocolo',
+  other: 'outra',
+} as const;
+
+export const OUTCOME_LABELS = {
+  granted: 'Provido',
+  partially_granted: 'Parcialmente provido',
+  denied: 'Negado',
+  not_heard: 'Não conhecido',
+  other: 'Outro resultado',
+} as const;
+
+export const UNANIMITY_LABELS = { unanimous: 'unânime', majority: 'por maioria', unknown: null } as const;
+
+export const MODALITY_LABELS = { must: 'deve', must_not: 'não deve', may: 'pode' } as const;
+
+export const CHANGE_TYPE_LABELS = { added: 'acrescentou', amended: 'alterou', revoked: 'revogou' } as const;
+
+export const UNIT_LABELS = { days: ['dia', 'dias'], months: ['mês', 'meses'], years: ['ano', 'anos'] } as const;

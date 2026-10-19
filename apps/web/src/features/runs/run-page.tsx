@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRun } from './queries';
 import { RunHeader } from './run-header';
+import { RunTabs } from './run-tabs';
 import { StageStepper } from './stage-stepper';
 import { useRunEvents } from './use-run-events';
 
@@ -42,12 +43,7 @@ export function RunPage({ runId }: { runId: string }) {
               <Skeleton className="h-32 w-full" />
             </div>
           ) : run.data.status === 'completed' || status === 'completed' ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Resultados</CardTitle>
-              </CardHeader>
-              <CardContent className="text-muted-foreground">As abas de resultado aparecem aqui.</CardContent>
-            </Card>
+            <RunTabs runId={runId} />
           ) : (
             <Alert variant="destructive">
               <AlertTitle>Execução {status === 'cancelled' ? 'cancelada' : 'interrompida ou com falha'}</AlertTitle>
