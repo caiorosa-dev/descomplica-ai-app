@@ -12,6 +12,7 @@ export * from './core/context';
 export * from './core/errors';
 export * from './core/stage';
 export * from './core/tokens';
+export * from './eval/faults/index';
 export * from './stages/index';
 export * from './stages/information-extraction/stage';
 export * from './stages/report/stage';

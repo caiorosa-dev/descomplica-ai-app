@@ -51,11 +51,20 @@ export function createApiClient(baseUrl: string) {
 
 export type ApiClient = ReturnType<typeof createApiClient>;
 
-/** Polls a run every 3 s until it reaches a terminal status (acceptable for a CLI). */
+/**
+ * Polls a run every 3 s until it reaches a terminal status (acceptable for a CLI).
+ * Network errors are retried for about a minute so an API restart does not abort a long evaluation.
+ */
 export async function waitForRun(client: ApiClient, runId: string, intervalMs = 3000): Promise<RunDto> {
+  let failures = 0;
   for (;;) {
-    const run = await client.getRun(runId);
-    if (['completed', 'failed', 'cancelled', 'interrupted'].includes(run.status)) return run;
+    try {
+      const run = await client.getRun(runId);
+      failures = 0;
+      if (['completed', 'failed', 'cancelled', 'interrupted'].includes(run.status)) return run;
+    } catch (e) {
+      if (!(e instanceof TypeError) || ++failures > 20) throw e;
+    }
     await new Promise((r) => setTimeout(r, intervalMs));
   }
 }

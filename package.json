@@ -15,7 +15,8 @@
     "test": "turbo run test",
     "db:migrate": "pnpm --filter @app/db db:migrate",
     "db:seed": "pnpm --filter @app/api exec tsx --env-file-if-exists=../../.env src/cli/seed.ts",
-    "eval:corpus": "pnpm --filter @app/api exec tsx --env-file-if-exists=../../.env src/cli/eval-corpus.ts"
+    "eval:corpus": "pnpm --filter @app/api exec tsx --env-file-if-exists=../../.env src/cli/eval-corpus.ts",
+    "eval:faults": "pnpm --filter @app/api exec tsx --env-file-if-exists=../../.env src/cli/eval-faults.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.15",

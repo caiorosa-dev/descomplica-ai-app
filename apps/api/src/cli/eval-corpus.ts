@@ -16,13 +16,14 @@ const { values } = parseArgs({
     only: { type: 'string', multiple: true },
     api: { type: 'string', default: 'http://localhost:3333' },
     concurrency: { type: 'string', default: '2' },
+    resume: { type: 'boolean', default: false },
     yes: { type: 'boolean', default: false },
   },
 });
 const presetSlugs = values.preset ?? [];
 if (presetSlugs.length === 0) {
   console.error(
-    'Uso: pnpm eval:corpus --preset <slug> [--preset <slug>] [--only <key>] [--api <url>] [--concurrency <n>] [--yes]',
+    'Uso: pnpm eval:corpus --preset <slug> [--preset <slug>] [--only <key>] [--api <url>] [--concurrency <n>] [--resume] [--yes]',
   );
   process.exit(1);
 }
@@ -38,9 +39,15 @@ const presets = (await client.listPresets()).filter((p) => presetSlugs.includes(
 const missing = presetSlugs.filter((s) => !presets.some((p) => p.slug === s));
 if (missing.length) throw new Error(`Presets não encontrados: ${missing.join(', ')}`);
 
+// --resume reuses completed runs from an earlier, interrupted evaluation instead of paying for them again.
+const previous = values.resume ? await client.listRuns({ label: 'eval-corpus' }) : [];
+const reusable = (documentId: string, presetId: string) =>
+  previous.find((r) => r.documentId === documentId && r.presetId === presetId && r.status === 'completed');
 const jobs = presets.flatMap((preset) => documents.map((document) => ({ preset, document })));
+const reused = jobs.filter((j) => reusable(j.document.id, j.preset.id)).length;
 console.log(
-  `Serão criadas ${jobs.length} execuções (${documents.length} documentos × ${presets.length} presets), com custo de API real.`,
+  `Serão criadas ${jobs.length - reused} execuções (${documents.length} documentos × ${presets.length} presets` +
+    `${reused ? `, ${reused} reaproveitadas` : ''}), com custo de API real.`,
 );
 if (!values.yes) {
   const rl = createInterface({ input: process.stdin, output: process.stdout });
@@ -56,8 +63,15 @@ await Promise.all(
   Array.from({ length: concurrency }, async () => {
     while (next < jobs.length) {
       const { preset, document } = jobs[next++] as (typeof jobs)[number];
-      const created = await client.createRun({ documentId: document.id, presetId: preset.id, label: 'eval-corpus' });
-      const run = await waitForRun(client, created.id);
+      const existing = reusable(document.id, preset.id);
+      const run =
+        existing ??
+        (await waitForRun(
+          client,
+          (
+            await client.createRun({ documentId: document.id, presetId: preset.id, label: 'eval-corpus' })
+          ).id,
+        ));
       const result = run.status === 'completed' ? await client.getResult(run.id) : null;
       const m = result?.metrics;
       const factsByCategory: Partial<Record<FactCategory, number>> = {};
