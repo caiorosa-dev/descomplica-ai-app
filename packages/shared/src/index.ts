@@ -4,6 +4,7 @@ export * from './api/documents';
 export * from './api/errors';
 export * from './api/presets';
 export * from './api/providers';
+export * from './api/runs';
 export * from './config/catalog';
 export * from './config/overrides';
 export * from './config/pipeline-config';
