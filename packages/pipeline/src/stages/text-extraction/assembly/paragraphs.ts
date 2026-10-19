@@ -6,6 +6,8 @@ export const STRUCTURAL_MARKER =
   /^(Art\.|Arts\.|§|[IVXLCDM]+\s*[-–—]|[a-z]\)|EMENTA|ACÓRDÃO|RELATÓRIO|VOTO|CONSIDERANDO|CAPÍTULO|ANEXO)/u;
 
 const TERMINAL_PUNCTUATION = /[.:;?!]$/;
+/** Abbreviations that end a line without ending the sentence ("no disposto no art." / "18, que ..."). */
+const TRAILING_ABBREVIATION = /\b(art|arts|inc|incs|n|nº|fls|p|pp|min|rel|des|dr|dra|sr|sra|ltda|cf)\.$/i;
 const GAP_FACTOR = 1.5;
 
 function median(values: number[]): number | null {
@@ -34,7 +36,8 @@ export function paragraphBreaks(doc: LineDocument): boolean[] {
   return lines.map((line, i) => {
     const previous = lines[i - 1];
     if (!previous) return true;
-    if (TERMINAL_PUNCTUATION.test(previous.text) || STRUCTURAL_MARKER.test(line.text)) return true;
+    if (STRUCTURAL_MARKER.test(line.text)) return true;
+    if (TERMINAL_PUNCTUATION.test(previous.text) && !TRAILING_ABBREVIATION.test(previous.text)) return true;
     const gap = medianGap.get(line.page);
     return previous.page === line.page && gap != null && line.y - previous.y > GAP_FACTOR * gap;
   });

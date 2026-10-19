@@ -33,6 +33,16 @@ test('paragraphs break on terminal punctuation and structural markers', () => {
   );
 });
 
+test('a line ending with an abbreviation does not end the paragraph (corpus regression)', () => {
+  const d = docFromLines([
+    'especialmente o disposto no art.',
+    '18, que autoriza a regulamentação;',
+    'Ver Lei n.',
+    '11.419/2006.',
+  ]);
+  expect(paragraphBreaks(d)).toEqual([true, false, true, false]);
+});
+
 test('paragraphs break on a vertical jump larger than 1.5x the median spacing', () => {
   const d: LineDocument = {
     format: 'pdf',

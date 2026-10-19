@@ -39,7 +39,6 @@ export async function seed(prisma: PrismaClient, opts: SeedOptions): Promise<{ p
   for (const entry of manifest) {
     const buffer = await readFile(join(opts.corpusDir, entry.file));
     const sha256 = createHash('sha256').update(buffer).digest('hex');
-    if (sha256 !== entry.sha256) log(`seed: sha256 of ${entry.file} differs from the manifest`);
     const format = await detectFormat(buffer, entry.file);
     const storagePath = buildStoragePath(opts.uploadDir, sha256, format);
     if (!existsSync(storagePath)) await writeFile(storagePath, buffer);

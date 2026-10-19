@@ -1,5 +1,6 @@
-import { makeDocx, makePdf } from '../../../testing/fixtures';
+import { makeDocx, makePdf, makePdfLayout } from '../../../testing/fixtures';
 import { extractLines } from './index';
+import { buildLines } from './pdf';
 
 const enc = (s: string) => new TextEncoder().encode(s);
 const opts = { dropStrikethrough: true };
@@ -63,4 +64,35 @@ test('txt keeps line positions and skips blank lines', async () => {
     ['Segunda', 2],
     ['Terceira', 3],
   ]);
+});
+
+test('whitespace items emitted by pdf.js become spaces (CNJ PDFs)', () => {
+  const items = [
+    { str: 'CONSIDERANDO', x: 184.4, y: 100, width: 98.6, height: 12 },
+    { str: ' ', x: 283, y: 100, width: 3.1, height: 0 },
+    { str: 'as diretrizes', x: 286.1, y: 100, width: 70, height: 12 },
+  ];
+  expect(buildLines(items, 1, 0).map((l) => l.text)).toEqual(['CONSIDERANDO as diretrizes']);
+});
+
+test('pdf items that touch stay glued', () => {
+  const items = [
+    { str: 'provi', x: 50, y: 100, width: 25, height: 11 },
+    { str: 'mento', x: 75, y: 100, width: 30, height: 11 },
+  ];
+  expect(buildLines(items, 1, 0)[0]!.text).toBe('provimento');
+});
+
+test('a superscript stays on its line', async () => {
+  const pdf = await makePdfLayout([
+    [
+      { text: 'Art. 1', y: 100 },
+      { text: 'o', y: 96.5, size: 7, gapBefore: 0 },
+      { text: 'Esta Resolução', y: 100, gapBefore: 3 },
+      { text: 'Art. 2', y: 114 },
+    ],
+  ]);
+  const lines = (await extractLines(pdf, 'pdf', opts)).pages[0]!.lines;
+  expect(lines.map((l) => l.text)).toEqual(['Art. 1o Esta Resolução', 'Art. 2']);
+  expect(lines[0]!.y).toBeCloseTo(100, 0);
 });

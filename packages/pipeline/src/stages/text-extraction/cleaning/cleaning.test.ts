@@ -66,6 +66,17 @@ test('stj signature stamp removed, body citation kept', () => {
   expect(stj(single('Site certificado')).removed[0]!.rule).toBe('boilerplate:stj-e-signature');
 });
 
+test('stj signature residue and barcode line removed (corpus regression)', () => {
+  expect(
+    isRemoved(
+      stj,
+      'Signatário(a): MARIA AUXILIADORA RAMALHO DA ROCHA, TERCEIRA TURMA Assinado em: 20/03/2025 15:45:10',
+    ),
+  ).toBe(true);
+  expect(isRemoved(stj, 'C54224551500;524029032@ 2024/0192224-5 - REsp 2186037')).toBe(true);
+  expect(isRemoved(stj, 'O signatário do contrato foi notificado.')).toBe(false);
+});
+
 test('dje header removed', () =>
   expect(isRemoved(dje, 'Edição nº 101/2022 Brasília - DF, disponibilização: terça-feira, 10 de maio de 2022')).toBe(
     true,

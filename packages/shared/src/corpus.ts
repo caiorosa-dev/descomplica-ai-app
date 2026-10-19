@@ -10,9 +10,6 @@ export const CorpusManifestEntry = z.object({
   expectedType: z.enum(['court_decision', 'normative_act']),
   expectedSubtype: DocumentSubtype.nullable(),
   version: z.enum(['original', 'compiled']),
-  officialUrl: z.string().url(),
-  sha256: z.string().regex(/^[a-f0-9]{64}$/),
-  retrievedAt: z.string(),
 });
 export type CorpusManifestEntry = z.infer<typeof CorpusManifestEntry>;
 
