@@ -20,6 +20,7 @@
   --color-destructive: var(--destructive);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-warning-vivid: var(--warning-vivid);
   --color-info: var(--info);
   --color-violet: var(--violet);
   --color-teal: var(--teal);
@@ -80,8 +81,9 @@
   /* Badge tones: strong text on a soft fill of the same hue. */
   --success: #1a7f4e;
   --success-soft: #dff3e8;
-  --warning: #946000;
-  --warning-soft: #fbf0d2;
+  --warning: #9a5b00;
+  --warning-vivid: #f2a516;
+  --warning-soft: #fff0c7;
   --info: #2b3bc4;
   --info-soft: #e4e8fc;
   --destructive-soft: #fce6dc;
@@ -122,6 +124,7 @@
   --success: #6edba2;
   --success-soft: rgb(110 219 162 / 0.13);
   --warning: #f2c76b;
+  --warning-vivid: #f5b942;
   --warning-soft: rgb(242 199 107 / 0.13);
   --info: #a9b5ff;
   --info-soft: rgb(139 155 255 / 0.16);

@@ -99,7 +99,7 @@ export function VerificationTab({ result, text }: { result: RunResultDto; text: 
             <span className="tabular-nums">{notIncluded.length}</span>
           </Button>
         </CollapsibleTrigger>
-        <CollapsibleContent className="flex flex-col gap-2">
+        <CollapsibleContent className="flex flex-col gap-2 overflow-hidden data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
           {notIncluded.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nada ficou de fora.</p>
           ) : (
@@ -122,7 +122,7 @@ export function VerificationTab({ result, text }: { result: RunResultDto; text: 
   );
 }
 
-const SEVERITY_DOT: Record<Severity, string> = { high: 'bg-destructive', medium: 'bg-warning', low: 'bg-info' };
+const SEVERITY_DOT: Record<Severity, string> = { high: 'bg-destructive', medium: 'bg-warning-vivid', low: 'bg-info' };
 
 function Score({ label, value, info, muted }: { label: string; value: string; info: string; muted?: boolean }) {
   return (

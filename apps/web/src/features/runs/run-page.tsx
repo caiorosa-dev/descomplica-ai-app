@@ -1,7 +1,9 @@
 import { TERMINAL_RUN_STATUSES } from '@app/shared';
 import { Link } from '@tanstack/react-router';
 import { GitCompareArrowsIcon, RotateCcwIcon } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
+import { EASE_OUT } from '@/components/motion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -71,20 +73,30 @@ export function RunPage({ runId }: { runId: string }) {
       {providers.data && rerunOpen && (
         <RerunDialog run={run.data} providers={providers.data} open onOpenChange={setRerunOpen} />
       )}
-      {!finished ? (
-        <ProcessingView live={live} />
-      ) : completed ? (
-        <RunTabs runId={runId} live={live} />
-      ) : (
-        <div className="grid gap-6 md:grid-cols-[1fr_18rem]">
-          {status === 'interrupted' ? <ResumeCard run={run.data} /> : <RunErrorCard run={run.data} />}
-          {live && (
-            <div className="rounded-3xl border bg-card p-5">
-              <StageStepper stages={live.stages} />
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={!finished ? 'processing' : completed ? 'result' : 'stopped'}
+          initial={{ opacity: 0, y: 16, scale: 0.99 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -10, scale: 0.99 }}
+          transition={{ duration: 0.35, ease: EASE_OUT }}
+        >
+          {!finished ? (
+            <ProcessingView live={live} />
+          ) : completed ? (
+            <RunTabs runId={runId} live={live} />
+          ) : (
+            <div className="grid gap-6 md:grid-cols-[1fr_18rem]">
+              {status === 'interrupted' ? <ResumeCard run={run.data} /> : <RunErrorCard run={run.data} />}
+              {live && (
+                <div className="rounded-3xl border bg-card p-5">
+                  <StageStepper stages={live.stages} />
+                </div>
+              )}
             </div>
           )}
-        </div>
-      )}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }

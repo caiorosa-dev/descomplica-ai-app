@@ -1,5 +1,6 @@
 import { STAGE_ORDER, type StageName, type StageRunStatus } from '@app/shared';
 import { CheckIcon, PencilLineIcon, RecycleIcon, XIcon } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { Progress } from '@/components/ui/progress';
 import { Spinner } from '@/components/ui/spinner';
 import { formatDuration, formatNumber, formatUsd } from '@/lib/format';
@@ -48,13 +49,32 @@ export function StageStepper({ stages }: { stages: Record<StageName, LiveStage> 
           <li key={name} className="flex gap-3" aria-current={stage.status === 'running' ? 'step' : undefined}>
             <div className="flex flex-col items-center">
               <span
-                className={cn('flex size-7 shrink-0 items-center justify-center rounded-full', NODE[stage.status])}
+                className={cn(
+                  'flex size-7 shrink-0 items-center justify-center rounded-full transition-colors duration-300',
+                  NODE[stage.status],
+                )}
                 aria-hidden
               >
-                <NodeIcon status={stage.status} index={i} />
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={stage.status}
+                    initial={{ scale: 0.4, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.4, opacity: 0 }}
+                    transition={{ type: 'spring', bounce: 0.45, duration: 0.4 }}
+                    className="flex"
+                  >
+                    <NodeIcon status={stage.status} index={i} />
+                  </motion.span>
+                </AnimatePresence>
               </span>
               {!isLast && (
-                <span className={cn('my-1 w-0.5 flex-1 rounded-full', done ? 'bg-primary/40' : 'bg-border')} />
+                <span
+                  className={cn(
+                    'my-1 w-0.5 flex-1 rounded-full transition-colors duration-500',
+                    done ? 'bg-primary/40' : 'bg-border',
+                  )}
+                />
               )}
             </div>
             <div className="flex min-w-0 flex-1 flex-col gap-1 pt-0.5 pb-5">

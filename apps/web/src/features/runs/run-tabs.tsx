@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { ActivePill, FadeIn } from '@/components/motion';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -13,7 +15,16 @@ import { SummaryTab } from './tabs/summary-tab';
 import { VerificationTab } from './tabs/verification-tab';
 
 const TRIGGER =
-  'rounded-full px-4 data-[state=active]:bg-card data-[state=active]:shadow-sm data-[state=active]:text-foreground';
+  'relative isolate rounded-full px-4 transition-colors data-active:bg-transparent data-active:shadow-none group-data-[variant=default]/tabs-list:data-active:shadow-none dark:data-active:border-transparent dark:data-active:bg-transparent';
+
+const TABS = [
+  { value: 'summary', label: 'Resumo' },
+  { value: 'facts', label: 'Dados' },
+  { value: 'verification', label: 'Verificação' },
+  { value: 'document', label: 'Original' },
+  { value: 'logs', label: 'Detalhes' },
+] as const;
+type TabValue = (typeof TABS)[number]['value'];
 
 function Count({ n, alert }: { n: number; alert?: boolean }) {
   return (
@@ -31,6 +42,7 @@ function Count({ n, alert }: { n: number; alert?: boolean }) {
 export function RunTabs({ runId, live }: { runId: string; live: RunLiveState | null }) {
   const result = useRunResult(runId, true);
   const text = useRunText(runId);
+  const [tab, setTab] = useState<TabValue>('summary');
   if (result.isPending) return <Skeleton className="h-96 w-full rounded-3xl" />;
   if (result.isError)
     return (
@@ -42,48 +54,51 @@ export function RunTabs({ runId, live }: { runId: string; live: RunLiveState | n
   const alerts = result.data.alerts;
   return (
     <SourceSheetProvider runId={runId}>
-      <Tabs defaultValue="summary" className="flex flex-col gap-6">
+      <Tabs value={tab} onValueChange={(v) => setTab(v as TabValue)} className="flex flex-col gap-6">
         <div className="-mx-4 overflow-x-auto px-4">
           <TabsList className="h-11! rounded-full p-1">
-            <TabsTrigger value="summary" className={TRIGGER}>
-              Resumo
-            </TabsTrigger>
-            <TabsTrigger value="facts" className={TRIGGER}>
-              Dados
-              <Count n={result.data.facts.length} />
-            </TabsTrigger>
-            <TabsTrigger value="verification" className={TRIGGER}>
-              Verificação
-              {alerts.length > 0 && <Count n={alerts.length} alert={alerts.some((a) => a.severity === 'high')} />}
-            </TabsTrigger>
-            <TabsTrigger value="document" className={TRIGGER}>
-              Original
-            </TabsTrigger>
-            <TabsTrigger value="logs" className={TRIGGER}>
-              Detalhes
-            </TabsTrigger>
+            {TABS.map((t) => (
+              <TabsTrigger key={t.value} value={t.value} className={TRIGGER}>
+                {tab === t.value && <ActivePill layoutId="run-tab-pill" />}
+                {t.label}
+                {t.value === 'facts' && <Count n={result.data.facts.length} />}
+                {t.value === 'verification' && alerts.length > 0 && (
+                  <Count n={alerts.length} alert={alerts.some((a) => a.severity === 'high')} />
+                )}
+              </TabsTrigger>
+            ))}
           </TabsList>
         </div>
         <TabsContent value="summary" className="text-base">
-          <SummaryTab result={result.data} text={text.data} />
+          <FadeIn>
+            <SummaryTab result={result.data} text={text.data} />
+          </FadeIn>
         </TabsContent>
         <TabsContent value="facts">
-          <FactsTab result={result.data} />
+          <FadeIn>
+            <FactsTab result={result.data} />
+          </FadeIn>
         </TabsContent>
         <TabsContent value="verification">
-          <VerificationTab result={result.data} text={text.data} />
+          <FadeIn>
+            <VerificationTab result={result.data} text={text.data} />
+          </FadeIn>
         </TabsContent>
         <TabsContent value="document">
-          <DocumentTab result={result.data} text={text.data} />
+          <FadeIn>
+            <DocumentTab result={result.data} text={text.data} />
+          </FadeIn>
         </TabsContent>
-        <TabsContent value="logs" className="flex flex-col gap-6">
-          {live && (
-            <section className="rounded-3xl border bg-card p-5">
-              <h2 className="mb-4 font-semibold">Etapas</h2>
-              <StageStepper stages={live.stages} />
-            </section>
-          )}
-          <LogsTab runId={runId} live={live} />
+        <TabsContent value="logs">
+          <FadeIn className="flex flex-col gap-6">
+            {live && (
+              <section className="rounded-3xl border bg-card p-5">
+                <h2 className="mb-4 font-semibold">Etapas</h2>
+                <StageStepper stages={live.stages} />
+              </section>
+            )}
+            <LogsTab runId={runId} live={live} />
+          </FadeIn>
         </TabsContent>
       </Tabs>
     </SourceSheetProvider>

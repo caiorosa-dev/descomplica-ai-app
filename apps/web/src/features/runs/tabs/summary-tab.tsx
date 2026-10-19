@@ -9,7 +9,7 @@ import { FactValue } from '../fact-value';
 const SEVERITY_RANK: Record<Severity, number> = { high: 0, medium: 1, low: 2 };
 const SEVERITY_UNDERLINE: Record<Severity, string> = {
   high: 'underline decoration-destructive decoration-2 underline-offset-4',
-  medium: 'underline decoration-warning decoration-2 underline-offset-4',
+  medium: 'underline decoration-warning-vivid decoration-2 underline-offset-4',
   low: 'underline decoration-info decoration-2 underline-offset-4',
 };
 

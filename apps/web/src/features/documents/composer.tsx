@@ -1,5 +1,6 @@
 import type { DocumentDto, PresetDto, ProvidersDto, UploadDocumentResponse } from '@app/shared';
 import { ArrowUpIcon, FileTextIcon, FileUpIcon, KeyRoundIcon, PaperclipIcon, XIcon } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { type DragEvent, useMemo, useRef, useState } from 'react';
 import { Beam } from '@/components/beam';
 import { Button } from '@/components/ui/button';
@@ -77,66 +78,92 @@ export function Composer({ presets, providers, onUpload, onSubmit, submitting }:
         )}
       >
         <div className="min-h-36 p-3">
-          {upload.state === 'uploading' || ready ? (
-            <div className="flex items-center gap-3 rounded-2xl bg-muted/70 p-3">
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-                <FileTextIcon aria-hidden />
-              </span>
-              <div className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="truncate font-medium">
-                  {upload.state === 'uploading' ? upload.file.name : ready?.filename}
+          <AnimatePresence mode="wait" initial={false}>
+            {upload.state === 'uploading' || ready ? (
+              <motion.div
+                key="file"
+                initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                transition={{ duration: 0.22 }}
+                className="flex items-center gap-3 rounded-2xl bg-muted/70 p-3"
+              >
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                  <FileTextIcon aria-hidden />
                 </span>
-                {upload.state === 'uploading' ? (
-                  <Progress value={upload.progress * 100} aria-label="Progresso do envio" className="h-1.5" />
-                ) : (
-                  <span className="text-xs text-muted-foreground">
-                    {ready && formatBytes(ready.sizeBytes)}
-                    {upload.state === 'ready' && upload.deduplicated && ', já enviado antes'}
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  <span className="truncate font-medium">
+                    {upload.state === 'uploading' ? upload.file.name : ready?.filename}
                   </span>
+                  {upload.state === 'uploading' ? (
+                    <Progress value={upload.progress * 100} aria-label="Progresso do envio" className="h-1.5" />
+                  ) : (
+                    <span className="text-xs text-muted-foreground">
+                      {ready && formatBytes(ready.sizeBytes)}
+                      {upload.state === 'ready' && upload.deduplicated && ', já enviado antes'}
+                    </span>
+                  )}
+                </div>
+                {ready && (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Remover arquivo"
+                    onClick={() => setUpload({ state: 'idle' })}
+                    disabled={submitting}
+                  >
+                    <XIcon />
+                  </Button>
                 )}
-              </div>
-              {ready && (
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Remover arquivo"
-                  onClick={() => setUpload({ state: 'idle' })}
-                  disabled={submitting}
+              </motion.div>
+            ) : (
+              <motion.button
+                key="empty"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.22 }}
+                type="button"
+                onClick={() => input.current?.click()}
+                className="group/drop flex h-full min-h-30 w-full items-center gap-4 rounded-2xl px-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <motion.span
+                  animate={dragging ? { scale: 1.12, rotate: -6 } : { scale: 1, rotate: 0 }}
+                  transition={{ type: 'spring', bounce: 0.5, duration: 0.4 }}
+                  className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground transition-transform group-hover/drop:-translate-y-0.5"
                 >
-                  <XIcon />
-                </Button>
-              )}
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => input.current?.click()}
-              className="group/drop flex h-full min-h-30 w-full items-center gap-4 rounded-2xl px-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-secondary text-secondary-foreground transition-transform group-hover/drop:-translate-y-0.5">
-                <FileUpIcon aria-hidden className="size-5" />
-              </span>
-              <span className="flex flex-col gap-0.5">
-                <span className="font-heading text-xl font-medium">
-                  {dragging ? 'Pode soltar' : 'Solte o arquivo aqui'}
+                  <FileUpIcon aria-hidden className="size-5" />
+                </motion.span>
+                <span className="flex flex-col gap-0.5">
+                  <span className="font-heading text-xl font-medium">
+                    {dragging ? 'Pode soltar' : 'Solte o arquivo aqui'}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    ou clique para escolher. PDF, DOCX, HTML ou TXT até 20 MB.
+                  </span>
                 </span>
-                <span className="text-sm text-muted-foreground">
-                  ou clique para escolher. PDF, DOCX, HTML ou TXT até 20 MB.
-                </span>
-              </span>
-            </button>
-          )}
+              </motion.button>
+            )}
+          </AnimatePresence>
           {!options.some((o) => o.available) && (
             <p className="flex items-center gap-2 px-3 pt-2 text-sm text-warning">
               <KeyRoundIcon aria-hidden className="size-4" />
               Coloque a OPENAI_API_KEY no .env para poder simplificar.
             </p>
           )}
-          {upload.state === 'error' && (
-            <p role="alert" className="px-3 pt-2 text-sm text-destructive">
-              {upload.message}
-            </p>
-          )}
+          <AnimatePresence>
+            {upload.state === 'error' && (
+              <motion.p
+                role="alert"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden px-3 pt-2 text-sm text-destructive"
+              >
+                {upload.message}
+              </motion.p>
+            )}
+          </AnimatePresence>
         </div>
         <div className="flex items-center gap-2 border-t border-dashed px-3 py-3">
           <Button

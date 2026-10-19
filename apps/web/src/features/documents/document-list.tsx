@@ -1,6 +1,8 @@
 import type { DocumentDto, DocumentType } from '@app/shared';
 import { Link } from '@tanstack/react-router';
 import { ChevronRightIcon, FileTextIcon, LandmarkIcon, type LucideIcon, RotateCcwIcon, ScaleIcon } from 'lucide-react';
+import { motion } from 'motion/react';
+import { EASE_OUT } from '@/components/motion';
 import { DocumentTypeBadge, RunStatusBadge, ToneBadge } from '@/components/tone-badge';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -14,7 +16,15 @@ const TYPE_ICON: Record<DocumentType | 'unknown', { icon: LucideIcon; className:
   unknown: { icon: FileTextIcon, className: 'bg-neutral-soft text-neutral-tone' },
 };
 
-function DocumentRow({ doc, onProcess }: { doc: DocumentDto; onProcess: (doc: DocumentDto) => void }) {
+function DocumentRow({
+  doc,
+  index,
+  onProcess,
+}: {
+  doc: DocumentDto;
+  index: number;
+  onProcess: (doc: DocumentDto) => void;
+}) {
   const { icon: Icon, className } = TYPE_ICON[doc.detectedType ?? 'unknown'];
   const body = (
     <>
@@ -36,7 +46,13 @@ function DocumentRow({ doc, onProcess }: { doc: DocumentDto; onProcess: (doc: Do
     </>
   );
   return (
-    <li className="group flex items-center gap-2 rounded-2xl pr-2 transition-colors hover:bg-card">
+    <motion.li
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: EASE_OUT, delay: Math.min(index, 12) * 0.03 }}
+      className="group flex items-center gap-2 rounded-2xl pr-2 transition-colors hover:bg-card"
+    >
       {doc.lastRunId ? (
         <Link
           to="/runs/$runId"
@@ -46,7 +62,7 @@ function DocumentRow({ doc, onProcess }: { doc: DocumentDto; onProcess: (doc: Do
           {body}
           <ChevronRightIcon
             aria-hidden
-            className="size-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
+            className="size-4 shrink-0 -translate-x-1 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100"
           />
         </Link>
       ) : (
@@ -66,7 +82,7 @@ function DocumentRow({ doc, onProcess }: { doc: DocumentDto; onProcess: (doc: Do
           Simplificar
         </Button>
       )}
-    </li>
+    </motion.li>
   );
 }
 
@@ -79,8 +95,8 @@ export function DocumentList({
 }) {
   return (
     <ul className="-mx-3 flex flex-col">
-      {documents.map((doc) => (
-        <DocumentRow key={doc.id} doc={doc} onProcess={onProcess} />
+      {documents.map((doc, i) => (
+        <DocumentRow key={doc.id} doc={doc} index={i} onProcess={onProcess} />
       ))}
     </ul>
   );

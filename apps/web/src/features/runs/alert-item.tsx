@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 import { useSourceSheet } from './use-source-sheet';
 
 export const SEVERITY_TONE: Record<Alert['severity'], Tone> = { high: 'danger', medium: 'warning', low: 'info' };
-const BAR: Record<Alert['severity'], string> = { high: 'bg-destructive', medium: 'bg-warning', low: 'bg-info' };
+const BAR: Record<Alert['severity'], string> = { high: 'bg-destructive', medium: 'bg-warning-vivid', low: 'bg-info' };
 
 export function AlertItem({
   alert,

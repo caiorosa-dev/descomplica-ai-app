@@ -1,4 +1,5 @@
 import { STAGE_ORDER, type StageName } from '@app/shared';
+import { AnimatePresence, motion } from 'motion/react';
 import { Beam } from '@/components/beam';
 import { ThinkingOrb } from '@/components/thinking-orb';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -21,12 +22,21 @@ export function ProcessingView({ live }: { live: RunLiveState | null }) {
     <div className="mx-auto flex w-full max-w-md flex-col items-center gap-8 py-8">
       <div className="flex flex-col items-center gap-5 text-center" role="status" aria-live="polite">
         <ThinkingOrb stage={current} />
-        <div className="flex flex-col gap-1">
-          <p className="font-heading text-2xl font-semibold">{current ? DOING[current] : 'Na fila'}</p>
-          <p className="text-sm text-muted-foreground">
-            {step ? `Etapa ${step} de ${STAGE_ORDER.length}` : 'Começa em instantes'}
-          </p>
-        </div>
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={current ?? 'queued'}
+            initial={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: -10, filter: 'blur(4px)' }}
+            transition={{ duration: 0.3 }}
+            className="flex flex-col gap-1"
+          >
+            <p className="font-heading text-2xl font-semibold">{current ? DOING[current] : 'Na fila'}</p>
+            <p className="text-sm text-muted-foreground">
+              {step ? `Etapa ${step} de ${STAGE_ORDER.length}` : 'Começa em instantes'}
+            </p>
+          </motion.div>
+        </AnimatePresence>
       </div>
       <Beam active className="w-full">
         <div className="w-full rounded-3xl border bg-card p-5">

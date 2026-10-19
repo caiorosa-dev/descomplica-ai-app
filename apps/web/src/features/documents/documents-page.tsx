@@ -2,9 +2,9 @@ import type { DocumentDto } from '@app/shared';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Mascot } from '@/components/mascot';
+import { Segmented } from '@/components/segmented';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { ApiError } from '@/lib/api-client';
 import { Composer } from './composer';
 import { DocumentList } from './document-list';
@@ -63,21 +63,30 @@ export function DocumentsPage() {
           <h2 id="docs-title" className="text-lg font-semibold">
             Seus documentos
           </h2>
-          <ToggleGroup
-            type="single"
-            size="sm"
+          <Segmented
             value={active}
-            onValueChange={(v) => v && setFilter(v as Filter)}
-            className="rounded-full bg-muted p-0.5"
+            onChange={setFilter}
+            layoutId="docs-filter"
             aria-label="Filtrar documentos"
-          >
-            <ToggleGroupItem value="upload" className="rounded-full px-3 data-[state=on]:bg-card">
-              Enviados <span className="text-muted-foreground tabular-nums">{uploads.length}</span>
-            </ToggleGroupItem>
-            <ToggleGroupItem value="corpus" className="rounded-full px-3 data-[state=on]:bg-card">
-              Corpus <span className="text-muted-foreground tabular-nums">{corpus.length}</span>
-            </ToggleGroupItem>
-          </ToggleGroup>
+            options={[
+              {
+                value: 'upload',
+                label: (
+                  <>
+                    Enviados <span className="text-muted-foreground tabular-nums">{uploads.length}</span>
+                  </>
+                ),
+              },
+              {
+                value: 'corpus',
+                label: (
+                  <>
+                    Corpus <span className="text-muted-foreground tabular-nums">{corpus.length}</span>
+                  </>
+                ),
+              },
+            ]}
+          />
         </div>
         {documents.isPending ? (
           <div className="flex flex-col gap-2">
@@ -100,7 +109,7 @@ export function DocumentsPage() {
             </p>
           </div>
         ) : (
-          <DocumentList documents={shown} onProcess={setProcessing} />
+          <DocumentList key={active} documents={shown} onProcess={setProcessing} />
         )}
       </section>
 

@@ -10,10 +10,11 @@ import {
   type LucideIcon,
   PenLineIcon,
 } from 'lucide-react';
+import { motion } from 'motion/react';
 import { useState } from 'react';
+import { Segmented } from '@/components/segmented';
 import { ToneBadge } from '@/components/tone-badge';
 import { Button } from '@/components/ui/button';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { CATEGORY_LABELS, CONFIDENCE_LABELS, FACT_STATUS_LABELS, UNCERTAINTY_REASON_LABELS } from '@/lib/labels';
 import { FactValue } from '../fact-value';
@@ -56,7 +57,13 @@ function FactRow({ fact, sectionLabel }: { fact: Fact; sectionLabel: string | un
   const sheet = useSourceSheet();
   const anchor = firstAnchored(fact);
   return (
-    <li className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl bg-card p-4 ring-1 ring-border">
+    <motion.li
+      layout
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+      className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl bg-card p-4 ring-1 ring-border"
+    >
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="text-sm text-muted-foreground">{fact.label}</span>
         <span className="font-heading text-lg font-semibold">
@@ -81,11 +88,9 @@ function FactRow({ fact, sectionLabel }: { fact: Fact; sectionLabel: string | un
         <EyeIcon data-icon="inline-start" />
         Ver trecho
       </Button>
-    </li>
+    </motion.li>
   );
 }
-
-const CHIP = 'rounded-full px-3 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground';
 
 export function FactsTab({ result }: { result: RunResultDto }) {
   const [category, setCategory] = useState<'all' | FactCategory>('all');
@@ -102,41 +107,25 @@ export function FactsTab({ result }: { result: RunResultDto }) {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <ToggleGroup
-          type="single"
-          size="sm"
+        <Segmented
+          variant="chips"
           value={category}
-          onValueChange={(v) => v && setCategory(v as typeof category)}
-          className="flex-wrap justify-start gap-1"
+          onChange={setCategory}
+          layoutId="fact-category"
           aria-label="Tipo de dado"
-        >
-          <ToggleGroupItem value="all" className={CHIP}>
-            Todos
-          </ToggleGroupItem>
-          {present.map((c) => (
-            <ToggleGroupItem key={c} value={c} className={CHIP}>
-              {CATEGORY_LABELS[c]}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-        <ToggleGroup
-          type="single"
-          size="sm"
+          options={[{ value: 'all', label: 'Todos' }, ...present.map((c) => ({ value: c, label: CATEGORY_LABELS[c] }))]}
+        />
+        <Segmented
           value={status}
-          onValueChange={(v) => v && setStatus(v as StatusFilter)}
-          className="rounded-full bg-muted p-0.5"
+          onChange={setStatus}
+          layoutId="fact-status"
           aria-label="Situação"
-        >
-          <ToggleGroupItem value="all" className="rounded-full px-3 data-[state=on]:bg-card">
-            Todos
-          </ToggleGroupItem>
-          <ToggleGroupItem value="confirmed" className="rounded-full px-3 data-[state=on]:bg-card">
-            Confirmados
-          </ToggleGroupItem>
-          <ToggleGroupItem value="uncertain" className="rounded-full px-3 data-[state=on]:bg-card">
-            Incertos
-          </ToggleGroupItem>
-        </ToggleGroup>
+          options={[
+            { value: 'all', label: 'Todos' },
+            { value: 'confirmed', label: 'Confirmados' },
+            { value: 'uncertain', label: 'Incertos' },
+          ]}
+        />
       </div>
 
       {groups.length === 0 ? (
