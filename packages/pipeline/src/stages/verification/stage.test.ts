@@ -117,6 +117,9 @@ test('stage: wrong deadline in summary yields high divergence alert', async () =
   );
   const alert = out.alerts[0]!;
   expect(alert.id).toBe('AL01');
+  const sourceItem = out.items.find((i) => i.id === alert.verificationItemId)!;
+  expect(sourceItem.verdict).toBe('divergent');
+  expect(sourceItem.factId).toBe(alert.sourceFactId);
   expect(alert.sourceEvidence).toEqual([{ start: quoteStart, end: quoteStart + 22, page: 1 }]);
   expect(out.items.every((i) => i.decidedBy === 'llm')).toBe(true);
   expect(out.metrics.factualConsistency).toBe(0);

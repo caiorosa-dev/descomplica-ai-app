@@ -57,6 +57,7 @@ export function buildAlerts(
         title: title(type, label),
         explanation: item.explanation,
         sourceFactId: item.factId,
+        verificationItemId: item.id,
         claimId: item.claimId,
         sourceEvidence: (item.direction === 'source_to_summary' || item.verdict === 'divergent'
           ? (fact?.evidence ?? [])

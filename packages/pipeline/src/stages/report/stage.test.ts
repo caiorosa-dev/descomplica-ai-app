@@ -23,6 +23,7 @@ const alert = (id: string, severity: Alert['severity']): Alert => ({
   explanation: 'e',
   sourceFactId: null,
   claimId: null,
+  verificationItemId: 'V001',
   sourceEvidence: [],
   summaryRef: null,
 });

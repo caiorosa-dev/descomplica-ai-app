@@ -58,6 +58,8 @@ export const Alert = z.object({
   explanation: z.string(),
   sourceFactId: z.string().nullable(),
   claimId: z.string().nullable(),
+  /** The VerificationItem (V001...) that raised the alert. */
+  verificationItemId: z.string(),
   sourceEvidence: z.array(SourceSpan),
   summaryRef: ParagraphRef.nullable(),
 });
