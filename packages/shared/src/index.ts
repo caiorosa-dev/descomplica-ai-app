@@ -1,6 +1,7 @@
 export const SHARED_PACKAGE = '@app/shared';
 
 export * from './api/errors';
+export * from './api/providers';
 export * from './config/catalog';
 export * from './config/overrides';
 export * from './config/pipeline-config';
