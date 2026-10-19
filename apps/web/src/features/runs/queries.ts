@@ -1,5 +1,6 @@
-import { DocumentDto, RunDto, RunResultDto, RunTextDto } from '@app/shared';
+import { DocumentDto, LlmCallDto, LlmCallSummaryDto, RunDto, RunResultDto, RunTextDto } from '@app/shared';
 import { useQuery } from '@tanstack/react-query';
+import { z } from 'zod';
 import { api } from '@/lib/api-client';
 
 export const runKey = (runId: string) => ['run', runId] as const;
@@ -27,4 +28,17 @@ export const useDocument = (documentId: string | undefined) =>
     queryKey: ['document', documentId],
     queryFn: () => api.get(`/documents/${documentId}`, DocumentDto),
     enabled: Boolean(documentId),
+  });
+
+export const useLlmCalls = (runId: string) =>
+  useQuery({
+    queryKey: ['run', runId, 'llm-calls'],
+    queryFn: () => api.get(`/runs/${runId}/llm-calls`, z.array(LlmCallSummaryDto)),
+  });
+
+export const useLlmCall = (runId: string, callId: string | null) =>
+  useQuery({
+    queryKey: ['run', runId, 'llm-calls', callId],
+    queryFn: () => api.get(`/runs/${runId}/llm-calls/${callId}`, LlmCallDto),
+    enabled: callId !== null,
   });

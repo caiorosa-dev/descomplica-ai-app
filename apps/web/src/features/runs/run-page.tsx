@@ -43,7 +43,7 @@ export function RunPage({ runId }: { runId: string }) {
               <Skeleton className="h-32 w-full" />
             </div>
           ) : run.data.status === 'completed' || status === 'completed' ? (
-            <RunTabs runId={runId} />
+            <RunTabs runId={runId} live={live} />
           ) : (
             <Alert variant="destructive">
               <AlertTitle>Execução {status === 'cancelled' ? 'cancelada' : 'interrompida ou com falha'}</AlertTitle>
