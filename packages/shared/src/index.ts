@@ -4,6 +4,7 @@ export * from './config/catalog';
 export * from './config/overrides';
 export * from './config/pipeline-config';
 export * from './config/presets';
+export * from './corpus';
 export * from './domain/document';
 export * from './domain/enums';
 export * from './domain/facts';
