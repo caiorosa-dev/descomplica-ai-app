@@ -9,6 +9,7 @@ export * from './core/tokens';
 export * from './stages/information-extraction/stage';
 export * from './stages/similarity/chunking';
 export * from './stages/similarity/metrics';
+export * from './stages/similarity/stage';
 export * from './stages/summarization/readability';
 export * from './stages/summarization/stage';
 export * from './stages/text-extraction/detect-format';
