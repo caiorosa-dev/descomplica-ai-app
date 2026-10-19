@@ -2,7 +2,7 @@ import type { CategoryValue, Claim, FactCategory, ValueOf } from '@app/shared';
 import { findDates } from '../information-extraction/parsers/dates';
 import { findDurations } from '../information-extraction/parsers/durations';
 import { findMoney } from '../information-extraction/parsers/money';
-import { sameAmount, sameDuration } from '../information-extraction/parsers/value-check';
+import { sameAmount } from '../information-extraction/parsers/value-check';
 
 /**
  * For dates, amounts and deadlines, when the claim text has exactly one such entity, the parsed value replaces
@@ -61,8 +61,14 @@ export function compareValues(
   switch (category) {
     case 'date':
       return result((a as ValueOf<'date'>).iso === (b as ValueOf<'date'>).iso);
-    case 'deadline':
-      return result(sameDuration(a as ValueOf<'deadline'>, b as ValueOf<'deadline'>));
+    case 'deadline': {
+      const x = a as ValueOf<'deadline'>;
+      const y = b as ValueOf<'deadline'>;
+      if (x.amount !== y.amount || x.unit !== y.unit) return 'different';
+      // Spec §6.5: "15 dias" against "15 dias úteis" is for the verifier to judge, never approved by code.
+      if ((x.businessDays === null) !== (y.businessDays === null)) return 'incomparable';
+      return result(x.businessDays === y.businessDays);
+    }
     case 'monetary_value':
       return result(sameAmount((a as ValueOf<'monetary_value'>).amount, (b as ValueOf<'monetary_value'>).amount));
     case 'legal_reference':

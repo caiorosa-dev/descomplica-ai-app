@@ -62,8 +62,13 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
     bus: app.eventBus,
     storage: app.storage,
     ai: app.aiOverrides,
+    log: app.log,
   });
-  const runQueue = createRunQueue({ concurrency: opts.env.RUN_CONCURRENCY, execute: runner.execute });
+  const runQueue = createRunQueue({
+    concurrency: opts.env.RUN_CONCURRENCY,
+    execute: runner.execute,
+    log: app.log,
+  });
   app.decorate('runQueue', runQueue);
   app.addHook('onClose', async () => runQueue.shutdown());
   await app.register(multipart, { limits: { fileSize: MAX_UPLOAD_BYTES, files: 1 } });

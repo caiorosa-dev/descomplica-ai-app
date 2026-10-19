@@ -22,9 +22,17 @@ import { buildStageInput } from './stage-inputs';
 
 const json = (value: unknown) => value as Prisma.InputJsonValue;
 
+/** The slice of Fastify's logger the runtime uses. */
+export interface Logger {
+  error(obj: object, msg: string): void;
+}
+
+/** An abort means cancelled, unless the abort carries its own reason (shutdown aborts with INTERRUPTED). */
 function toStageError(error: unknown, signal: AbortSignal): StageError {
   const e = signal.aborted
-    ? new PipelineError('CANCELLED', 'Run cancelled')
+    ? isPipelineError(signal.reason)
+      ? signal.reason
+      : new PipelineError('CANCELLED', 'Run cancelled')
     : isPipelineError(error)
       ? error
       : new PipelineError('INTERNAL_ERROR', error instanceof Error ? error.message : String(error));
@@ -42,6 +50,7 @@ function summarizeMetrics(stage: StageName, output: unknown): Record<string, unk
     case 'information_extraction': {
       const i = o as StageOutputs['information_extraction'];
       return {
+        documentType: i.classification.documentType,
         facts: i.facts.length,
         confirmed: i.facts.filter((f) => f.status === 'confirmed').length,
         uncertain: i.facts.filter((f) => f.status === 'uncertain').length,
@@ -92,6 +101,7 @@ export function createPipelineRunner(deps: {
   bus: EventBus;
   storage: FileStorage;
   ai?: AiOverrides;
+  log?: Logger;
 }) {
   const { prisma, env } = deps;
   const models = deps.ai?.modelResolver ?? createModelResolver(env);
@@ -207,19 +217,25 @@ export function createPipelineRunner(deps: {
       await events.emit({ type: 'run.status', runId, stage: null, status: 'completed' });
     } catch (error) {
       const stageError = toStageError(error, signal);
-      const status = stageError.code === 'CANCELLED' ? 'cancelled' : 'failed';
-      if (current) {
-        await prisma.stageRun.update({
-          where: { id: current.id },
-          data: { status: 'failed', error: json(stageError), durationMs: Date.now() - stageStarted },
+      const status =
+        stageError.code === 'CANCELLED' ? 'cancelled' : stageError.code === 'INTERRUPTED' ? 'interrupted' : 'failed';
+      try {
+        if (current) {
+          await prisma.stageRun.update({
+            where: { id: current.id },
+            data: { status: 'failed', error: json(stageError), durationMs: Date.now() - stageStarted },
+          });
+          await events.emit({ type: 'stage.failed', runId, stage: current.stage as StageName, error: stageError });
+        }
+        await prisma.run.update({
+          where: { id: runId },
+          data: { status, error: json(stageError), finishedAt: new Date() },
         });
-        await events.emit({ type: 'stage.failed', runId, stage: current.stage as StageName, error: stageError });
+        await events.emit({ type: 'run.status', runId, stage: null, status });
+      } catch (writeError) {
+        // The run stays queued/running in the database; markInterruptedRuns settles it on the next start.
+        deps.log?.error({ err: writeError, runId }, 'could not record the end of a run');
       }
-      await prisma.run.update({
-        where: { id: runId },
-        data: { status, error: json(stageError), finishedAt: new Date() },
-      });
-      await events.emit({ type: 'run.status', runId, stage: null, status });
     }
   }
 
@@ -231,7 +247,10 @@ export async function markInterruptedRuns(prisma: PrismaClient): Promise<number>
   const interrupted = new PipelineError('INTERRUPTED', 'API restarted during the run');
   const error = { code: interrupted.code, message: interrupted.message, userMessage: interrupted.userMessage };
   return prisma.$transaction(async (tx) => {
-    const runs = await tx.run.findMany({ where: { status: { in: ['queued', 'running'] } }, select: { id: true } });
+    const runs = await tx.run.findMany({
+      where: { status: { in: ['queued', 'running'] } },
+      select: { id: true, stageRuns: { where: { status: 'running' }, select: { stage: true } } },
+    });
     const ids = runs.map((r) => r.id);
     if (ids.length === 0) return 0;
     await tx.stageRun.updateMany({
@@ -242,6 +261,16 @@ export async function markInterruptedRuns(prisma: PrismaClient): Promise<number>
       where: { id: { in: ids } },
       data: { status: 'interrupted', error, finishedAt: new Date() },
     });
+    // Terminal events, so a client replaying the log ends on "interrupted" instead of a run that never finishes.
+    for (const run of runs) {
+      const last = await tx.runEvent.aggregate({ where: { runId: run.id }, _max: { seq: true } });
+      let seq = last._max.seq ?? 0;
+      for (const { stage } of run.stageRuns)
+        await tx.runEvent.create({ data: { runId: run.id, seq: ++seq, type: 'stage.failed', stage, data: { error } } });
+      await tx.runEvent.create({
+        data: { runId: run.id, seq: ++seq, type: 'run.status', stage: null, data: { status: 'interrupted' } },
+      });
+    }
     return ids.length;
   });
 }

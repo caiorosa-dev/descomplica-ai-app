@@ -76,7 +76,8 @@ test('retype leaves value when parser finds zero or several entities', () => {
 test.each([
   ['date', { iso: '2025-03-24', role: 'judgment' }, { iso: '2025-03-24', role: 'publication' }, 'equal'],
   ['date', { iso: '2025-03-24', role: 'judgment' }, { iso: '2025-03-25', role: 'judgment' }, 'different'],
-  ['deadline', dl(15, 'days', true), dl(15, 'days', null), 'equal'],
+  ['deadline', dl(15, 'days', true), dl(15, 'days', null), 'incomparable'],
+  ['deadline', dl(15, 'days', null), dl(15, 'days', null), 'equal'],
   ['deadline', dl(15, 'days', true), dl(15, 'days', false), 'different'],
   ['deadline', dl(15, 'days', null), dl(15, 'months', null), 'different'],
   [

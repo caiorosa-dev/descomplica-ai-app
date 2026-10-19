@@ -10,14 +10,15 @@ const documentInclude = {
       status: true,
       stageRuns: {
         where: { stage: { in: ['text_extraction' as const, 'information_extraction' as const] } },
-        select: { stage: true, output: true, reusedFrom: { select: { output: true } } },
+        // Metrics only: the outputs carry the whole canonical text and would make the list heavy.
+        select: { stage: true, metrics: true, reusedFrom: { select: { metrics: true } } },
       },
     },
   },
 };
 
-const PagesOutput = z.object({ stats: z.object({ pages: z.number().int() }) });
-const TypeOutput = z.object({ classification: z.object({ documentType: DocumentType }) });
+const PagesMetric = z.object({ pages: z.number().int() });
+const TypeMetric = z.object({ documentType: DocumentType });
 
 type DocumentRow = NonNullable<Awaited<ReturnType<typeof findDocument>>>;
 
@@ -27,12 +28,12 @@ function findDocument(prisma: PrismaClient, id: string) {
 
 export function toDocumentDto(row: DocumentRow): DocumentDto {
   const completed = row.runs.find((r) => r.status === 'completed');
-  const outputOf = (stage: string) => {
+  const metricsOf = (stage: string) => {
     const sr = completed?.stageRuns.find((s) => s.stage === stage);
-    return sr?.output ?? sr?.reusedFrom?.output ?? null;
+    return sr?.metrics ?? sr?.reusedFrom?.metrics ?? null;
   };
-  const pages = PagesOutput.safeParse(outputOf('text_extraction'));
-  const type = TypeOutput.safeParse(outputOf('information_extraction'));
+  const pages = PagesMetric.safeParse(metricsOf('text_extraction'));
+  const type = TypeMetric.safeParse(metricsOf('information_extraction'));
   return {
     id: row.id,
     filename: row.filename,
@@ -42,8 +43,8 @@ export function toDocumentDto(row: DocumentRow): DocumentDto {
     source: row.source,
     corpusKey: row.corpusKey,
     createdAt: row.createdAt.toISOString(),
-    detectedType: type.success ? type.data.classification.documentType : null,
-    pages: pages.success ? pages.data.stats.pages : null,
+    detectedType: type.success ? type.data.documentType : null,
+    pages: pages.success ? pages.data.pages : null,
     runCount: row.runs.length,
     lastRunStatus: (row.runs[0]?.status as RunStatus | undefined) ?? null,
     lastRunId: row.runs[0]?.id ?? null,

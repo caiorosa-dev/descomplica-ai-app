@@ -41,7 +41,12 @@ export function RunPage({ runId }: { runId: string }) {
       </Alert>
     );
 
-  const status = live?.status ?? run.data.status;
+  // A terminal status from the server wins over a live log that never reached its end (e.g. old interrupted runs).
+  const serverFinished = TERMINAL_RUN_STATUSES.includes(run.data.status);
+  const status =
+    serverFinished && live && !TERMINAL_RUN_STATUSES.includes(live.status)
+      ? run.data.status
+      : (live?.status ?? run.data.status);
   const finished = TERMINAL_RUN_STATUSES.includes(status);
   const completed = run.data.status === 'completed' || status === 'completed';
   return (
