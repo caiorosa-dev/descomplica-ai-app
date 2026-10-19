@@ -61,7 +61,7 @@ function CanonicalText({ result, text }: { result: RunResultDto; text: RunTextDt
       </Card>
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
-          <CardDescription>Evidências dos fatos destacadas no texto canônico.</CardDescription>
+          <CardDescription>Trechos que sustentam os dados aparecem destacados.</CardDescription>
           <Field orientation="horizontal" className="w-fit">
             <Switch id="coverage" checked={coverage} onCheckedChange={setCoverage} />
             <FieldLabel htmlFor="coverage">Mapa de cobertura</FieldLabel>
@@ -93,8 +93,7 @@ function CleaningReport({ text }: { text: RunTextDto }) {
         <CardHeader>
           <CardTitle>Removido na limpeza</CardTitle>
           <CardDescription>
-            {formatNumber(report.charsBefore)} caracteres extraídos → {formatNumber(report.charsAfter)} no texto
-            canônico.
+            {formatNumber(report.charsBefore)} caracteres lidos, {formatNumber(report.charsAfter)} depois da limpeza.
           </CardDescription>
         </CardHeader>
         <CardContent>

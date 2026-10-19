@@ -1,7 +1,7 @@
 import type { RunResultDto, RunTextDto, Severity } from '@app/shared';
 import { ToneBadge } from '@/components/tone-badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { formatNumber } from '@/lib/format';
+import { formatCompression, formatNumber } from '@/lib/format';
 import { SEVERITY_LABELS } from '@/lib/labels';
 import { cn } from '@/lib/utils';
 import { FactValue } from '../fact-value';
@@ -41,11 +41,7 @@ export function SummaryTab({ result, text }: { result: RunResultDto; text: RunTe
           />
           <Stat
             label="Tamanho"
-            value={
-              compressionRatio >= 1
-                ? `${formatOne(compressionRatio)}x menor`
-                : `${formatOne(1 / compressionRatio)}x maior`
-            }
+            value={formatCompression(compressionRatio)}
             hint="Palavras do original divididas pelas palavras do resumo."
           />
           <Stat label="Dados" value={formatNumber(result.facts.length)} hint="Dados extraídos que apoiam o resumo." />

@@ -22,7 +22,7 @@ import { rerunnableStages, useRerun } from './actions';
 import { buildOverrides } from './config-form/config-diff';
 import { PipelineConfigForm } from './config-form/pipeline-config-form';
 
-/** "Reprocessar a partir de...": pick a stage and change only the config of that stage onwards. */
+/** "Refazer a partir de...": pick a stage and change only the config of that stage onwards. */
 export function RerunDialog({
   run,
   providers,
@@ -47,7 +47,7 @@ export function RerunDialog({
       { fromStage, configOverrides: buildOverrides(run.config, values) },
       {
         onSuccess: () => onOpenChange(false),
-        onError: (e) => toast.error(e instanceof ApiError ? e.message : 'Não foi possível reprocessar.'),
+        onError: (e) => toast.error(e instanceof ApiError ? e.message : 'Não foi possível refazer.'),
       },
     ),
   );
@@ -56,14 +56,14 @@ export function RerunDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl">
         <DialogHeader>
-          <DialogTitle>Reprocessar a partir de uma etapa</DialogTitle>
+          <DialogTitle>Refazer a partir de uma etapa</DialogTitle>
           <DialogDescription>
-            As etapas anteriores são reaproveitadas; só a configuração das etapas seguintes pode mudar.
+            As etapas anteriores são reaproveitadas. Só dá para mudar as etapas seguintes.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="flex min-h-0 flex-col gap-4">
           <Field>
-            <FieldLabel htmlFor="from-stage">Reprocessar a partir de</FieldLabel>
+            <FieldLabel htmlFor="from-stage">Refazer a partir de</FieldLabel>
             <Select value={fromStage} onValueChange={(v) => setFromStage(v as StageName)}>
               <SelectTrigger id="from-stage" className="w-full">
                 <SelectValue />
@@ -78,7 +78,7 @@ export function RerunDialog({
                 </SelectGroup>
               </SelectContent>
             </Select>
-            <FieldDescription>Só aparecem as etapas cujas anteriores terminaram.</FieldDescription>
+            <FieldDescription>Aparecem só as etapas que já podem recomeçar.</FieldDescription>
           </Field>
           <ScrollArea className="max-h-[50vh] pr-3">
             <PipelineConfigForm form={form} providers={providers} editableStages={editable} />
@@ -89,7 +89,7 @@ export function RerunDialog({
             </Button>
             <Button type="submit" disabled={rerun.isPending}>
               {rerun.isPending && <Spinner data-icon="inline-start" />}
-              Reprocessar
+              Refazer
             </Button>
           </DialogFooter>
         </form>

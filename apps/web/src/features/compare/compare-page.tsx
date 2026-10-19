@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { formatDateTime, formatDuration, formatScore, formatUsd } from '@/lib/format';
+import { formatCompression, formatDateTime, formatDuration, formatScore, formatUsd } from '@/lib/format';
 import { usePresets } from '../documents/queries';
 import { diffConfig } from '../runs/config-form/config-diff';
 import { useRun, useRunResult } from '../runs/queries';
@@ -64,8 +64,7 @@ function Comparison({ ids }: { ids: [string, string] }) {
     },
     {
       label: 'Compressão',
-      value: (i) =>
-        results[i]?.summary ? `${results[i].summary.compressionRatio.toFixed(1).replace('.', ',')}×` : '—',
+      value: (i) => (results[i]?.summary ? formatCompression(results[i].summary.compressionRatio) : '—'),
     },
     { label: 'Alinhamento (F1)', value: (i) => formatScore(results[i]?.metrics?.alignmentF1 ?? null) },
     {

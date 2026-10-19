@@ -31,7 +31,7 @@ export function RunErrorCard({ run }: { run: RunDto }) {
             onClick={() =>
               rerun.mutate(
                 { fromStage: failed.stage },
-                { onError: (e) => toast.error(e instanceof ApiError ? e.message : 'Não foi possível reprocessar.') },
+                { onError: (e) => toast.error(e instanceof ApiError ? e.message : 'Não foi possível refazer.') },
               )
             }
           >

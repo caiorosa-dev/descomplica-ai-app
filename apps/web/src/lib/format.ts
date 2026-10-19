@@ -58,3 +58,9 @@ export function formatWhen(iso: string, now = new Date()): string {
   if (diffDays === 1) return 'ontem';
   return d.toLocaleDateString('pt-BR');
 }
+
+/** Words of the original divided by words of the summary, read as "3,2x menor" (or "1,7x maior" when it grew). */
+export function formatCompression(ratio: number): string {
+  const one = (n: number) => n.toFixed(1).replace('.', ',');
+  return ratio >= 1 ? `${one(ratio)}x menor` : `${one(1 / ratio)}x maior`;
+}

@@ -30,7 +30,7 @@ export function SourceSheetProvider({ runId, children }: { runId: string; childr
               Trecho do documento
               {span?.page != null && <Badge variant="secondary">Página {span.page}</Badge>}
             </SheetTitle>
-            <SheetDescription>Texto canônico extraído do documento, com o trecho destacado.</SheetDescription>
+            <SheetDescription>O trecho aparece destacado no texto do documento.</SheetDescription>
           </SheetHeader>
           <ScrollArea className="min-h-0 flex-1 px-4 pb-4">
             {canonical && span ? (
