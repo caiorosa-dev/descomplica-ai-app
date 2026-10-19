@@ -59,9 +59,29 @@ export const api = {
   del: async (path: string): Promise<void> => {
     await request('DELETE', path, {});
   },
-  upload(file: File): Promise<UploadDocumentResponse> {
-    const form = new FormData();
-    form.append('file', file);
-    return request('POST', '/documents', { body: form, schema: UploadDocumentResponse });
+  /** Multipart upload through XHR so the caller can show progress (0–1). */
+  upload(file: File, onProgress?: (fraction: number) => void): Promise<UploadDocumentResponse> {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${BASE}/documents`);
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) onProgress?.(e.loaded / e.total);
+      };
+      xhr.onerror = () =>
+        reject(new ApiError(0, 'NETWORK_ERROR', 'Não foi possível falar com a API. Ela está rodando?'));
+      xhr.onload = () => {
+        const data = safeJson(xhr.responseText);
+        if (xhr.status >= 200 && xhr.status < 300) return resolve(UploadDocumentResponse.parse(data));
+        const parsed = ApiErrorBody.safeParse(data);
+        reject(
+          parsed.success
+            ? new ApiError(xhr.status, parsed.data.error.code, parsed.data.error.message, parsed.data.error.details)
+            : new ApiError(xhr.status, 'HTTP_ERROR', `A API respondeu ${xhr.status}.`),
+        );
+      };
+      const form = new FormData();
+      form.append('file', file);
+      xhr.send(form);
+    });
   },
 };

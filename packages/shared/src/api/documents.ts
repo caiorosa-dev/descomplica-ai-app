@@ -22,6 +22,7 @@ export const DocumentDto = z.object({
   pages: z.number().int().nullable(),
   runCount: z.number().int(),
   lastRunStatus: RunStatus.nullable(),
+  lastRunId: z.string().nullable(),
 });
 export type DocumentDto = z.infer<typeof DocumentDto>;
 

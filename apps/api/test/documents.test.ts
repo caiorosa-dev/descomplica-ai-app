@@ -34,6 +34,7 @@ test('upload then dedupe (Review Focus 5)', async () => {
     sizeBytes: 26,
     runCount: 0,
     lastRunStatus: null,
+    lastRunId: null,
   });
 });
 

@@ -91,6 +91,14 @@ test('full run with mocks completes', async () => {
   expect(types.at(-1)).toBe('run.status');
   expect(types.filter((t) => t === 'stage.completed')).toHaveLength(6);
   expect(types).toContain('llm.call');
+  const docs = (await app.inject({ method: 'GET', url: '/documents' })).json();
+  expect(docs[0]).toMatchObject({
+    lastRunId: run.id,
+    lastRunStatus: 'completed',
+    runCount: 1,
+    detectedType: 'court_decision',
+    pages: 1,
+  });
   const listed = (await app.inject({ method: 'GET', url: `/runs?documentId=${documentId}&label=teste` })).json();
   expect(listed.map((r: { id: string }) => r.id)).toEqual([run.id]);
 });

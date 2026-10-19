@@ -6,6 +6,7 @@ const documentInclude = {
   runs: {
     orderBy: { createdAt: 'desc' as const },
     select: {
+      id: true,
       status: true,
       stageRuns: {
         where: { stage: { in: ['text_extraction' as const, 'information_extraction' as const] } },
@@ -45,6 +46,7 @@ export function toDocumentDto(row: DocumentRow): DocumentDto {
     pages: pages.success ? pages.data.stats.pages : null,
     runCount: row.runs.length,
     lastRunStatus: (row.runs[0]?.status as RunStatus | undefined) ?? null,
+    lastRunId: row.runs[0]?.id ?? null,
   };
 }
 
