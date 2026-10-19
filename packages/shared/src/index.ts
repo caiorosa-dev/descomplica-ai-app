@@ -1,5 +1,6 @@
 export const SHARED_PACKAGE = '@app/shared';
 
+export * from './api/documents';
 export * from './api/errors';
 export * from './api/providers';
 export * from './config/catalog';

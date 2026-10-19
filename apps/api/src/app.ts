@@ -4,11 +4,13 @@ import multipart from '@fastify/multipart';
 import Fastify, { type FastifyInstance } from 'fastify';
 import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 import type { Env } from './env';
+import { documentsRoutes } from './modules/documents/routes';
 import { healthRoutes } from './modules/health/routes';
 import { providersRoutes } from './modules/providers/routes';
 import { registerErrorHandler } from './plugins/error-handler';
 import { registerPrisma } from './plugins/prisma';
 import type { EmbedManyFn } from './runtime/adapters/embedder';
+import { createFileStorage, type FileStorage } from './storage/file-storage';
 
 export const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 
@@ -29,6 +31,7 @@ declare module 'fastify' {
   interface FastifyInstance {
     env: Env;
     aiOverrides: AiOverrides;
+    storage: FileStorage;
   }
 }
 
@@ -38,10 +41,12 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
   app.setSerializerCompiler(serializerCompiler);
   app.decorate('env', opts.env);
   app.decorate('aiOverrides', opts.ai ?? {});
+  app.decorate('storage', createFileStorage(opts.env.UPLOAD_DIR));
   registerErrorHandler(app);
   registerPrisma(app, { url: opts.env.DATABASE_URL, prisma: opts.prisma });
   await app.register(multipart, { limits: { fileSize: MAX_UPLOAD_BYTES, files: 1 } });
   await app.register(healthRoutes);
   await app.register(providersRoutes);
+  await app.register(documentsRoutes);
   return app;
 }
