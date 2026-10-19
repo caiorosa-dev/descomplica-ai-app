@@ -43,7 +43,7 @@ test('presets parse and need the right providers', () => {
   const bySlug = Object.fromEntries(BUILTIN_PRESETS.map((p) => [p.slug, parsePipelineConfig(p.config)]));
   expect([...requiredProviders(bySlug['anthropic-default']!)].sort()).toEqual(['anthropic', 'openai']);
   expect([...requiredProviders(bySlug['openai-default']!)]).toEqual(['openai']);
-  expect([...requiredProviders(bySlug['budget']!)]).toEqual(['openai']);
+  expect([...requiredProviders(bySlug.budget!)]).toEqual(['openai']);
   expect(bySlug['cross-verifier']!.models.summarization.model).toBe(MODEL_REFS.openaiMain);
   expect(bySlug['cross-verifier']!.models.verification.model).toBe(MODEL_REFS.anthropicMain);
 });
