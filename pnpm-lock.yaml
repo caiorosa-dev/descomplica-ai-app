@@ -202,9 +202,24 @@ importers:
       '@fastify/multipart':
         specifier: ^10.1.4
         version: 10.1.4
+      '@prisma/adapter-pg':
+        specifier: 7.10.1
+        version: 7.10.1
+      '@prisma/client':
+        specifier: 7.10.1
+        version: 7.10.1(prisma@7.10.1(@types/node@24.19.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(typescript@7.0.2))(typescript@7.0.2)
       ai:
         specifier: ^7.0.143
         version: 7.0.143(zod@4.6.7)
+      cheerio:
+        specifier: ^1.2.0
+        version: 1.2.0
+      domhandler:
+        specifier: 5.0.3
+        version: 5.0.3
+      fastest-levenshtein:
+        specifier: ^1.0.16
+        version: 1.0.16
       fastify:
         specifier: ^5.12.7
         version: 5.12.7
@@ -214,9 +229,24 @@ importers:
       fflate:
         specifier: ^0.8.3
         version: 0.8.3
+      file-type:
+        specifier: ^22.2.0
+        version: 22.2.0
+      gpt-tokenizer:
+        specifier: ^4.0.3
+        version: 4.0.3
+      mammoth:
+        specifier: ^1.13.0
+        version: 1.13.0
       p-queue:
         specifier: ^10.0.0
         version: 10.0.0
+      pg:
+        specifier: ^8.23.1
+        version: 8.23.1
+      unpdf:
+        specifier: ^1.9.0
+        version: 1.9.0
       zod:
         specifier: ^4.6.7
         version: 4.6.7

@@ -1,0 +1,11 @@
+**/node_modules
+**/dist
+**/.turbo
+**/coverage
+**/*.tsbuildinfo
+.git
+.data
+.env
+.superpowers
+reports
+packages/db/src/generated
