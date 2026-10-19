@@ -1,8 +1,17 @@
 import { TERMINAL_RUN_STATUSES } from '@app/shared';
+import { RotateCcwIcon } from 'lucide-react';
+import { useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useProviders } from '../documents/queries';
+import { CancelButton } from './cancel-button';
+import { ExportMenu } from './export-menu';
 import { useRun } from './queries';
+import { RerunDialog } from './rerun-dialog';
+import { ResumeCard } from './resume-card';
+import { RunErrorCard } from './run-error-card';
 import { RunHeader } from './run-header';
 import { RunTabs } from './run-tabs';
 import { StageStepper } from './stage-stepper';
@@ -11,6 +20,8 @@ import { useRunEvents } from './use-run-events';
 export function RunPage({ runId }: { runId: string }) {
   const run = useRun(runId);
   const live = useRunEvents(runId, run.data);
+  const providers = useProviders();
+  const [rerunOpen, setRerunOpen] = useState(false);
 
   if (run.isPending) return <Skeleton className="h-40 w-full" />;
   if (run.isError)
@@ -25,7 +36,25 @@ export function RunPage({ runId }: { runId: string }) {
   const finished = TERMINAL_RUN_STATUSES.includes(status);
   return (
     <div className="flex flex-col gap-6">
-      <RunHeader run={run.data} live={live} />
+      <RunHeader
+        run={run.data}
+        live={live}
+        actions={
+          <>
+            <CancelButton runId={runId} status={status} />
+            <ExportMenu run={run.data} />
+            {finished && (
+              <Button variant="outline" onClick={() => setRerunOpen(true)} disabled={!providers.data}>
+                <RotateCcwIcon data-icon="inline-start" />
+                Reprocessar
+              </Button>
+            )}
+          </>
+        }
+      />
+      {providers.data && rerunOpen && (
+        <RerunDialog run={run.data} providers={providers.data} open onOpenChange={setRerunOpen} />
+      )}
       <div className="grid gap-6 lg:grid-cols-[18rem_1fr]">
         <Card className="h-fit">
           <CardHeader>
@@ -44,11 +73,10 @@ export function RunPage({ runId }: { runId: string }) {
             </div>
           ) : run.data.status === 'completed' || status === 'completed' ? (
             <RunTabs runId={runId} live={live} />
+          ) : status === 'interrupted' ? (
+            <ResumeCard run={run.data} />
           ) : (
-            <Alert variant="destructive">
-              <AlertTitle>Execução {status === 'cancelled' ? 'cancelada' : 'interrompida ou com falha'}</AlertTitle>
-              <AlertDescription>{run.data.error?.userMessage ?? 'Veja as etapas ao lado.'}</AlertDescription>
-            </Alert>
+            <RunErrorCard run={run.data} />
           )}
         </div>
       </div>
