@@ -19,3 +19,4 @@ export * from './domain/similarity';
 export * from './domain/summary';
 export * from './domain/verification';
 export * from './events';
+export * from './export';

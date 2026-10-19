@@ -9,6 +9,7 @@ import { healthRoutes } from './modules/health/routes';
 import { presetsRoutes } from './modules/presets/routes';
 import { providersRoutes } from './modules/providers/routes';
 import { runEventsRoute } from './modules/runs/events-route';
+import { runExportRoute } from './modules/runs/export/route';
 import { runResultRoutes } from './modules/runs/result-routes';
 import { runsRoutes } from './modules/runs/routes';
 import { registerErrorHandler } from './plugins/error-handler';
@@ -72,5 +73,6 @@ export async function buildApp(opts: BuildAppOptions): Promise<FastifyInstance> 
   await app.register(runEventsRoute);
   await app.register(runsRoutes);
   await app.register(runResultRoutes);
+  await app.register(runExportRoute);
   return app;
 }
